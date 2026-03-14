@@ -78,10 +78,13 @@ Vercel Edge → middleware.ts (resolve tenant + contexto)
 | name | text | |
 | logo_url | text | Supabase Storage |
 | primary_color | text | hex |
+| timezone | text DEFAULT 'America/Sao_Paulo' | fuso horário do negócio |
 | monthly_price | numeric(10,2) | por tenant — MVP popula com valor único |
 | status | text | `active` \| `inactive` \| `suspended` |
 | created_at | timestamptz | |
 | updated_at | timestamptz | |
+
+**Timezone:** todos os horários de disponibilidade são calculados e exibidos no fuso do tenant, não do browser do cliente. Um cliente em Manaus vê os slots no horário de São Paulo da estética. Isso evita divergência entre o que o cliente reserva e o que a estética vê.
 
 #### `tenant_users`
 | Campo | Tipo | Notas |
@@ -127,6 +130,8 @@ Vercel Edge → middleware.ts (resolve tenant + contexto)
 | name | text | |
 | phone | text | E.164 normalizado |
 | created_at | timestamptz | |
+| updated_at | timestamptz | |
+| anonymized_at | timestamptz | nullable — LGPD: quando dados foram anonimizados |
 
 **Constraint:** `UNIQUE(tenant_id, phone)` — mesmo telefone pode existir em tenants diferentes.
 
@@ -150,12 +155,15 @@ Vercel Edge → middleware.ts (resolve tenant + contexto)
 |---|---|---|
 | id | uuid PK | |
 | booking_id | uuid FK→bookings | |
-| tenant_id | uuid FK→tenants | |
 | token | text UNIQUE | 64 chars hex (256 bits) |
-| expires_at | timestamptz | now() + 7 dias |
+| expires_at | timestamptz | `booking.ends_at + 2 dias` |
 | used_at | timestamptz | nullable |
 | revoked_at | timestamptz | nullable |
 | created_at | timestamptz | |
+
+**Nota:** `tenant_id` removido da tabela — sempre obtido via JOIN com `bookings` para evitar inconsistência entre os dois registros. A constraint composta seria complexa; a abordagem mais segura é não duplicar o dado.
+
+**Expiração:** baseada em `booking.ends_at + 2 dias` (não na data de criação). Um agendamento para daqui a 3 semanas terá um link válido até 2 dias após a data do atendimento. Isso garante que o cliente sempre consiga acessar o link durante e após o atendimento.
 
 #### `business_hours`
 | Campo | Tipo | Notas |
@@ -183,9 +191,10 @@ Vercel Edge → middleware.ts (resolve tenant + contexto)
 
 **Semântica:** `professional_id NULL` = feriado/fechamento do tenant inteiro. Preenchido = bloqueio individual de profissional.
 
-### Índices
+### Índices e Constraints de Integridade
 
 ```sql
+-- Índices de performance
 CREATE INDEX ON bookings(tenant_id, starts_at);
 CREATE INDEX ON bookings(tenant_id, professional_id, starts_at);
 CREATE INDEX ON bookings(tenant_id, status);
@@ -196,7 +205,14 @@ CREATE INDEX ON schedule_blocks(tenant_id, start_at);
 CREATE INDEX ON services(tenant_id, is_active);
 CREATE INDEX ON tenants(slug);
 CREATE INDEX ON tenants(status);
+
+-- Previne double-booking: dois agendamentos confirmados no mesmo slot para o mesmo profissional
+CREATE UNIQUE INDEX no_double_booking
+  ON bookings (professional_id, starts_at)
+  WHERE status NOT IN ('cancelled', 'rescheduled');
 ```
+
+**Nota sobre concorrência:** o índice parcial em `(professional_id, starts_at)` garante que não haverá dois agendamentos confirmados no mesmo horário exato para o mesmo profissional. Como os slots são discretos (gerados pela lógica de disponibilidade), esse índice é suficiente para o MVP. Caso dois requests simultâneos passem pela verificação de disponibilidade ao mesmo tempo, o banco rejeitará o segundo INSERT com erro de constraint, que a aplicação trata retornando "horário não disponível".
 
 ---
 
@@ -275,13 +291,34 @@ export async function getBookingsByDate(tenantId: string, date: Date) {
 
 ### Row Level Security
 
-```sql
--- Aplicado em todas as tabelas de tenant
-ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+**Modelo de isolamento em duas camadas:**
 
+**Camada 1 (primária) — filtragem na aplicação:** todas as queries usam `service_role` key e incluem `.eq('tenant_id', tenantId)` explicitamente. Esta é a principal barreira de isolamento.
+
+**Camada 2 (secondary) — RLS para operações autenticadas do tenant admin:** usa a chave `anon` com o usuário autenticado do Supabase Auth. Garante que mesmo se houver bug na aplicação, o tenant admin não acessa dados de outro tenant.
+
+```sql
+-- Ativar RLS nas tabelas principais
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE services ENABLE ROW LEVEL SECURITY;
+ALTER TABLE professionals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE schedule_blocks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE business_hours ENABLE ROW LEVEL SECURITY;
+
+-- Política baseada no usuário autenticado (tenant admin)
 CREATE POLICY tenant_isolation ON bookings
-  USING (tenant_id = current_setting('app.tenant_id')::uuid);
+  FOR ALL
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM tenant_users
+      WHERE user_id = auth.uid()
+    )
+  );
+-- Aplicar política equivalente em todas as tabelas acima
 ```
+
+**Nota importante:** operações do fluxo público (booking do cliente) e do super admin usam a `service_role` key — RLS é bypassado intencionalmente nesse caso, e o isolamento é garantido exclusivamente pela Camada 1 (tenant_id em toda query). Isso é correto pois não há `auth.uid()` disponível em requests não autenticados. Nunca expor a `service_role` key no client-side.
 
 ---
 
@@ -293,6 +330,7 @@ CREATE POLICY tenant_isolation ON bookings
 - Login via `POST /api/super/auth` → gera JWT com claim `role: "super"`
 - Cookie: `httpOnly`, `secure`, `sameSite=strict`, 8h de duração
 - Sem Supabase Auth — zero dependência externa
+- **Revogação de sessão:** rotacionar `JWT_SECRET` no `.env` invalida todas as sessões ativas imediatamente. Esse é o mecanismo de revogação para o super admin — downtime aceitável de ~1 minuto enquanto o novo secret propaga.
 
 ### Tenant Admin
 
@@ -312,13 +350,13 @@ export function generateBookingToken(): string {
   return randomBytes(32).toString('hex') // 256 bits de entropia
 }
 
-export async function createBookingToken(bookingId: string, tenantId: string) {
+export async function createBookingToken(bookingId: string, endsAt: Date) {
   const token = generateBookingToken()
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 dias
+  // Expira 2 dias após o término do atendimento — nunca antes da data do agendamento
+  const expiresAt = new Date(endsAt.getTime() + 2 * 24 * 60 * 60 * 1000)
 
   await supabaseServer().from('booking_tokens').insert({
     booking_id: bookingId,
-    tenant_id: tenantId,
     token,
     expires_at: expiresAt.toISOString(),
   })
@@ -355,7 +393,8 @@ export async function validateBookingToken(token: string) {
 
 - RLS em todas as tabelas com `tenant_id`
 - HTTPS obrigatório (Vercel cuida automaticamente)
-- Cookies: `httpOnly`, `secure`, `sameSite=lax`
+- Cookies de sessão admin: `httpOnly`, `secure`, `sameSite=strict`
+- Cookie de conveniência do cliente (token): `httpOnly`, `secure`, `sameSite=lax`
 - Rate limiting: 10 req/min por IP em `/api/bookings` e qualquer endpoint que receba `phone`
 - Validação/sanitização com Zod em todas as bordas (form + Server Action)
 - Headers de segurança via `next.config.js`:
@@ -648,19 +687,75 @@ MONTHLY_PRICE_DEFAULT=              # valor padrão ao criar tenant no MVP
 
 ---
 
-## 12. Suposições Assumidas no MVP
+## 12. Algoritmo de Disponibilidade
+
+Este é o ponto de maior complexidade de domínio do MVP. O algoritmo roda em `lib/availability.ts`.
+
+### Entrada
+- `tenantId: string`
+- `professionalId: string`
+- `serviceId: string` (para obter `duration_minutes` + `buffer_minutes`)
+- `date: Date` (dia consultado, no timezone do tenant)
+
+### Lógica (pseudocódigo)
+
+```
+1. Obter business_hours do tenant para o day_of_week do date
+   → Se is_open = false: retornar [] (dia fechado)
+
+2. Obter schedule_blocks que se sobrepõem ao date para:
+   → professional_id = null (bloqueia todos) OU professional_id = professionalId
+   → Se o dia inteiro está bloqueado: retornar []
+
+3. Gerar todos os slots possíveis do dia:
+   → slot_duration = service.duration_minutes + service.buffer_minutes
+   → slots = []
+   → current = open_time
+   → Enquanto current + slot_duration <= close_time:
+       slots.push(current)
+       current += slot_duration
+
+4. Obter bookings existentes confirmados para o profissional naquele dia:
+   → status NOT IN ('cancelled', 'rescheduled')
+   → Cada booking ocupa [starts_at, ends_at)
+
+5. Filtrar slots disponíveis:
+   → Para cada slot em slots:
+       slot_start = date + slot (no timezone do tenant, convertido para UTC)
+       slot_end = slot_start + slot_duration
+       → Verificar overlap com bookings: nenhum booking deve ter starts_at < slot_end AND ends_at > slot_start
+       → Verificar overlap com schedule_blocks: mesma lógica
+       → Se sem overlap: slot disponível
+       → Se no passado (slot_start < now()): excluir
+
+6. Retornar lista de slots disponíveis como timestamps UTC
+```
+
+### Granularidade dos slots
+
+Slots são gerados com granularidade igual a `duration_minutes + buffer_minutes` do serviço. Não há slots "genéricos" — cada consulta de disponibilidade é específica para um serviço.
+
+### Múltiplos profissionais
+
+Quando o tenant tem múltiplos profissionais e o cliente escolhe um, a disponibilidade é calculada para aquele profissional específico. Se o cliente não escolher (tenant com 1 profissional), a disponibilidade do único profissional ativo é usada automaticamente.
+
+---
+
+## 13. Suposições Assumidas no MVP
 
 1. **Profissionais compartilham horário do tenant** — sem agenda individual por profissional no MVP
 2. **Atribuição automática de profissional** — quando tenant tem 1 profissional, seleção é transparente ao cliente; com múltiplos, o cliente escolhe na tela de booking
 3. **Sem pagamento online** — `monthly_price` em `tenants` é só para cálculo do MRR no super admin
 4. **Templates WhatsApp pré-aprovados** — necessário configurar templates na Meta Business antes de ir a produção
 5. **1 admin por tenant no MVP** — `tenant_users` suporta múltiplos, mas onboarding cria apenas 1
-6. **Fuso horário** — datas armazenadas em UTC, exibidas no fuso do navegador do cliente; sem configuração de fuso por tenant no MVP
+6. **Fuso horário** — datas armazenadas em UTC. Disponibilidade calculada e exibida no timezone do tenant (campo `tenants.timezone`, padrão `America/Sao_Paulo`). O browser do cliente não define o fuso — o fuso da estética é a referência.
 7. **Sem paginação inicial** — listas de agendamentos e serviços sem paginação no MVP (implementar quando necessário)
+8. **LGPD** — o campo `customers.anonymized_at` e a capacidade de zerar `name` e `phone` de um registro são suficientes para MVP. Processo formal de exclusão a pedido será implementado na Fase 2. Por ora, o admin pode manualmente anonimizar via painel.
+9. **Revogação de token do cliente** — não há "reenviar link" no MVP. Se o cliente perder o link, precisa entrar em contato com a estética. O admin pode ver o agendamento no painel. Feature de reenvio entra na Fase 2.
 
 ---
 
-## 13. Dependências Principais
+## 14. Dependências Principais
 
 ```json
 {
@@ -689,7 +784,7 @@ MONTHLY_PRICE_DEFAULT=              # valor padrão ao criar tenant no MVP
 
 ---
 
-## 14. Estratégia de Mocks para Desenvolvimento Local
+## 15. Estratégia de Mocks para Desenvolvimento Local
 
 ### Princípio
 
@@ -795,3 +890,21 @@ npx supabase db diff -f nome_da_migration
 ### `.env.local` no `.gitignore`
 
 Nunca commitar `.env.local`. Manter `.env.example` atualizado com todas as variáveis necessárias (sem valores reais) para onboarding de novos devs.
+
+### Token URL visível no dev
+
+No fluxo de booking local, o WhatsApp é mockado para `console.log`. Para facilitar o teste da página `/b/[token]` sem precisar ler o terminal, a página de confirmação exibe o link diretamente quando `NODE_ENV === 'development'`:
+
+```tsx
+{process.env.NODE_ENV === 'development' && (
+  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs">
+    <p className="font-mono text-yellow-800">DEV: {bookingUrl}</p>
+  </div>
+)}
+```
+
+Esse banner nunca aparece em staging ou produção. Inspecionar tokens também é possível via Supabase Studio em `http://localhost:54323`.
+
+### Supabase Studio
+
+Disponível em `http://localhost:54323` durante `supabase start`. Permite inspecionar tabelas, executar SQL, ver tokens gerados, e testar RLS policies sem sair do browser.
