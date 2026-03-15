@@ -15,7 +15,7 @@ vi.mock('next/navigation', () => ({
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getCurrentTenant } from '@/lib/tenant'
 import { redirect } from 'next/navigation'
-import { getAdminSession, requireAdmin } from '@/lib/admin/auth'
+import { getAdminSession, requireAdmin, logoutAdmin } from '@/lib/admin/auth'
 
 const mockTenant = {
   id: 'tenant-uuid',
@@ -104,5 +104,14 @@ describe('requireAdmin', () => {
     )
     const result = await requireAdmin()
     expect(result?.userId).toBe('user-uuid')
+  })
+})
+
+describe('logoutAdmin', () => {
+  it('chama supabase.auth.signOut', async () => {
+    const mockSupabase = makeMockSupabase({ id: 'user-uuid' }, 'owner')
+    vi.mocked(createSupabaseServerClient).mockResolvedValue(mockSupabase as never)
+    await logoutAdmin()
+    expect(mockSupabase.auth.signOut).toHaveBeenCalled()
   })
 })

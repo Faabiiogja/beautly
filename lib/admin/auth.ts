@@ -19,19 +19,27 @@ export async function getAdminSession(): Promise<AdminSession | null> {
   const tenant = await getCurrentTenant()
   if (!tenant) return null
 
-  const { data: tenantUser } = await supabase
+  const { data: tenantUser, error: tenantUserError } = await supabase
     .from('tenant_users')
     .select('role')
     .eq('user_id', user.id)
     .eq('tenant_id', tenant.id)
     .single()
 
+  if (tenantUserError && tenantUserError.code !== 'PGRST116') {
+    console.error('[getAdminSession] tenant_users query error:', tenantUserError)
+    return null
+  }
+
   if (!tenantUser) return null
+
+  const role = tenantUser.role
+  if (role !== 'owner' && role !== 'staff') return null
 
   return {
     userId: user.id,
     tenantId: tenant.id,
-    role: tenantUser.role as 'owner' | 'staff',
+    role,
   }
 }
 
