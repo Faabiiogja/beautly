@@ -6,23 +6,18 @@ import type { Database } from '@/types/database'
 
 type Tenant = Database['public']['Tables']['tenants']['Row']
 
-const MARKETING_HOSTS = new Set([
-  'beautly.vercel.app',
-  'beautly.com',
-  'www.beautly.com',
+export const MARKETING_HOSTS = new Set([
+  'beautly.cloud',
+  'www.beautly.cloud',
 ])
 
 /**
  * Extrai o tenant slug do host.
- * Retorna null para admin.beautly.com (super admin context).
+ * Retorna null para hosts de marketing (beautly.cloud, www.beautly.cloud).
  * Retorna o fallback para ambientes de dev/preview.
  */
 export function extractTenantSlug(host: string, fallback = 'demo'): string | null {
-  // Remove porta se presente
   const hostname = host.split(':')[0]
-
-  // Super admin — sem tenant
-  if (hostname === 'admin.beautly.com') return null
 
   // Hosts de marketing — sem tenant
   if (MARKETING_HOSTS.has(hostname)) return null
