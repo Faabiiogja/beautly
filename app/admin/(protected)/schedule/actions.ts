@@ -7,10 +7,13 @@ import { createSupabaseServiceClient } from '@/lib/supabase/server'
 
 const BusinessHourSchema = z.object({
   day_of_week: z.number().int().min(0).max(6),
-  open_time: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
-  close_time: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
+  open_time: z.string().regex(/^\d{2}:\d{2}$/).nullable(),
+  close_time: z.string().regex(/^\d{2}:\d{2}$/).nullable(),
   is_open: z.boolean(),
-})
+}).refine(
+  (v) => !v.is_open || (v.open_time != null && v.close_time != null && v.open_time < v.close_time),
+  { message: 'validation_error' }
+)
 
 const ScheduleBlockSchema = z.object({
   start_at: z.string().datetime(),
@@ -85,13 +88,15 @@ export async function deleteScheduleBlockLogic(id: string): Promise<ActionResult
   const session = await requireAdmin()
   const supabase = createSupabaseServiceClient()
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('schedule_blocks')
     .delete()
     .eq('id', id)
     .eq('tenant_id', session.tenantId)
+    .select('id')
 
   if (error) return { success: false, error: 'db_error' }
+  if (!data?.length) return { success: false, error: 'not_found' }
   return { success: true }
 }
 

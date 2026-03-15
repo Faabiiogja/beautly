@@ -113,13 +113,15 @@ export async function deleteServiceLogic(id: string): Promise<ActionResult> {
   const session = await requireAdmin()
   const supabase = createSupabaseServiceClient()
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('services')
     .delete()
     .eq('id', id)
     .eq('tenant_id', session.tenantId)
+    .select('id')
 
   if (error) return { success: false, error: 'db_error' }
+  if (!data?.length) return { success: false, error: 'not_found' }
   return { success: true }
 }
 

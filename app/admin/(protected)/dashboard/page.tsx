@@ -1,14 +1,21 @@
 import { CalendarDays } from 'lucide-react'
 import { requireAdmin } from '@/lib/admin/auth'
-import { getCurrentTenant } from '@/lib/tenant'
+import { createSupabaseServiceClient } from '@/lib/supabase/server'
 import { getBookingsByDate } from '@/domain/bookings/queries'
 import type { BookingWithDetails } from '@/domain/bookings/types'
 
 export default async function DashboardPage() {
-  const { tenantId } = await requireAdmin()
+  const session = await requireAdmin()
+  const { tenantId } = session
 
-  const tenant = await getCurrentTenant()
-  const timezone = tenant?.timezone ?? 'America/Sao_Paulo'
+  const supabase = createSupabaseServiceClient()
+  const { data: tenantData } = await supabase
+    .from('tenants')
+    .select('timezone')
+    .eq('id', session.tenantId)
+    .single()
+
+  const timezone = tenantData?.timezone ?? 'America/Sao_Paulo'
 
   const todayStr = new Intl.DateTimeFormat('sv-SE', { timeZone: timezone }).format(new Date())
 
