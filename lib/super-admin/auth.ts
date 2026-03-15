@@ -35,9 +35,9 @@ export async function verifyJWT(token: string): Promise<JWTPayload | null> {
 export async function requireSuperAdmin(): Promise<JWTPayload> {
   const cookieStore = await cookies()
   const token = cookieStore.get('sa_token')?.value
-  if (!token) redirect('/super-admin/login')
+  if (!token) redirect('/login')
   const payload = await verifyJWT(token)
-  if (!payload) redirect('/super-admin/login')
+  if (!payload) redirect('/login')
   return payload
 }
 
