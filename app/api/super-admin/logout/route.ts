@@ -1,8 +1,8 @@
 // app/api/super-admin/logout/route.ts
-import { NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 
-export async function POST() {
-  const res = NextResponse.json({ ok: true })
+export async function POST(req: NextRequest) {
+  const res = NextResponse.redirect(new URL('/admin/login', req.url))
   res.cookies.set('sa_token', '', {
     httpOnly: true,
     sameSite: 'strict',
