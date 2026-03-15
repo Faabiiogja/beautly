@@ -42,13 +42,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Resource not found' }, { status: 400 })
   }
 
-  const slots = await getAvailableSlots({
-    tenantId: tenant.id,
-    professionalId,
-    serviceId,
-    date,
-    timezone: tenant.timezone,
-  })
-
-  return NextResponse.json({ slots })
+  try {
+    const slots = await getAvailableSlots({
+      tenantId: tenant.id,
+      professionalId,
+      serviceId,
+      date,
+      timezone: tenant.timezone,
+    })
+    return NextResponse.json({ slots })
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch availability' }, { status: 500 })
+  }
 }

@@ -54,12 +54,14 @@ export async function confirmBookingLogic(
       .select('id, duration_minutes, buffer_minutes, name')
       .eq('id', serviceId)
       .eq('tenant_id', tenant.id)
+      .eq('is_active', true)
       .single(),
     supabase
       .from('professionals')
       .select('id, name')
       .eq('id', professionalId)
       .eq('tenant_id', tenant.id)
+      .eq('is_active', true)
       .single(),
   ])
 
