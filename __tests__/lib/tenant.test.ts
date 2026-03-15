@@ -30,6 +30,10 @@ describe('extractTenantSlug — casos edge', () => {
     expect(extractTenantSlug('beautly-abc123.vercel.app', 'demo')).toBe('demo')
   })
 
+  it('retorna null para beautly.vercel.app (contexto marketing)', () => {
+    expect(extractTenantSlug('beautly.vercel.app', 'demo')).toBeNull()
+  })
+
   it('não falha com host vazio', () => {
     expect(extractTenantSlug('', 'demo')).toBe('demo')
   })

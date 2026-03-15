@@ -26,6 +26,10 @@ describe('extractTenantSlug', () => {
     expect(extractTenantSlug('beautly-git-feature-branch.vercel.app', 'demo')).toBe('demo')
   })
 
+  it('retorna null para beautly.vercel.app (contexto marketing)', () => {
+    expect(extractTenantSlug('beautly.vercel.app', 'demo')).toBeNull()
+  })
+
   it('retorna null para admin.beautly.com (contexto super admin)', () => {
     expect(extractTenantSlug('admin.beautly.com')).toBeNull()
   })

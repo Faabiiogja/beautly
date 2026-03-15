@@ -8,7 +8,8 @@ const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin']
 
 export const metadata: Metadata = {
   title: 'Beautly',
-  description: 'Agendamento para estética feminina',
+  description:
+    'SaaS para estudios e profissionais de beleza gerirem agenda, atendimento e crescimento.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

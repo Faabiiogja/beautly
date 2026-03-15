@@ -127,3 +127,9 @@
     @apply font-sans;
   }
 }
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

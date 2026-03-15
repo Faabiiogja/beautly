@@ -6,6 +6,12 @@ import type { Database } from '@/types/database'
 
 type Tenant = Database['public']['Tables']['tenants']['Row']
 
+const MARKETING_HOSTS = new Set([
+  'beautly.vercel.app',
+  'beautly.com',
+  'www.beautly.com',
+])
+
 /**
  * Extrai o tenant slug do host.
  * Retorna null para admin.beautly.com (super admin context).
@@ -17,6 +23,9 @@ export function extractTenantSlug(host: string, fallback = 'demo'): string | nul
 
   // Super admin — sem tenant
   if (hostname === 'admin.beautly.com') return null
+
+  // Hosts de marketing — sem tenant
+  if (MARKETING_HOSTS.has(hostname)) return null
 
   // Dev local
   if (hostname === 'localhost' || hostname === '127.0.0.1') return fallback
