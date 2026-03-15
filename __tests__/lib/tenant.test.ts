@@ -1,5 +1,14 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { extractTenantSlug } from '@/lib/tenant'
+import { createSupabaseServiceClient } from '@/lib/supabase/server'
+
+vi.mock('@/lib/supabase/server', () => ({
+  createSupabaseServiceClient: vi.fn(),
+}))
+
+vi.mock('next/cache', () => ({
+  unstable_cache: (fn: Function) => fn,
+}))
 
 describe('extractTenantSlug — marketing hosts', () => {
   it('retorna null para beautly.cloud (marketing)', () => {
@@ -52,5 +61,50 @@ describe('extractTenantSlug — dev e preview', () => {
 
   it('não falha com host vazio', () => {
     expect(extractTenantSlug('', 'demo')).toBe('demo')
+  })
+})
+
+describe('getServicesByTenantId', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('retorna serviços ativos do tenant ordenados por nome', async () => {
+    const mockServices = [
+      { id: '1', name: 'Corte', price: 50, duration_minutes: 30 },
+      { id: '2', name: 'Manicure', price: 30, duration_minutes: 45 },
+    ]
+    const mockQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({ data: mockServices, error: null }),
+    }
+    vi.mocked(createSupabaseServiceClient).mockReturnValue({
+      from: vi.fn().mockReturnValue(mockQuery),
+    } as any)
+
+    const { getServicesByTenantId } = await import('@/lib/tenant')
+    const result = await getServicesByTenantId('tenant-123')
+
+    expect(result).toEqual(mockServices)
+    expect(mockQuery.eq).toHaveBeenCalledWith('tenant_id', 'tenant-123')
+    expect(mockQuery.eq).toHaveBeenCalledWith('is_active', true)
+    expect(mockQuery.order).toHaveBeenCalledWith('name')
+  })
+
+  it('retorna array vazio quando não há serviços', async () => {
+    const mockQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({ data: null, error: null }),
+    }
+    vi.mocked(createSupabaseServiceClient).mockReturnValue({
+      from: vi.fn().mockReturnValue(mockQuery),
+    } as any)
+
+    const { getServicesByTenantId } = await import('@/lib/tenant')
+    const result = await getServicesByTenantId('tenant-123')
+
+    expect(result).toEqual([])
   })
 })

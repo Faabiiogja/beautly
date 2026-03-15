@@ -66,3 +66,29 @@ export async function getCurrentTenant(): Promise<Tenant | null> {
   if (!slug) return null
   return getTenantBySlug(slug)
 }
+
+// Service type derived from database schema — single source of truth
+export type Service = Pick<
+  Database['public']['Tables']['services']['Row'],
+  'id' | 'name' | 'price' | 'duration_minutes'
+>
+
+/**
+ * Busca serviços ativos de um tenant com cache de 60 segundos.
+ * O Next.js incorpora os argumentos da função na chave de cache automaticamente,
+ * então tenants diferentes têm entradas de cache separadas.
+ */
+export const getServicesByTenantId = unstable_cache(
+  async (tenantId: string): Promise<Service[]> => {
+    const supabase = createSupabaseServiceClient()
+    const { data } = await supabase
+      .from('services')
+      .select('id, name, price, duration_minutes')
+      .eq('tenant_id', tenantId)
+      .eq('is_active', true)
+      .order('name')
+    return (data ?? []) as Service[]
+  },
+  ['services-by-tenant'],
+  { revalidate: 60 }
+)
