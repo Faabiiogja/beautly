@@ -7,7 +7,8 @@ export function middleware(req: NextRequest) {
 
   // Contexto super admin — reescreve UI para /super-admin/*
   // Rotas de API (/api/*) NÃO são reescritas — já estão no caminho correto
-  if (host.split(':')[0] === 'admin.beautly.com') {
+  const superAdminHosts = ['admin.beautly.com', 'beautly-admin.vercel.app']
+  if (superAdminHosts.includes(host.split(':')[0])) {
     const pathname = req.nextUrl.pathname
     // Não reescrever rotas de API — elas são acessadas diretamente
     if (!pathname.startsWith('/api/')) {
