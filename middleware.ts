@@ -5,8 +5,17 @@ import { extractTenantSlug } from '@/lib/tenant'
 export function middleware(req: NextRequest) {
   const host = req.headers.get('host') ?? ''
 
-  // Contexto super admin — redirecionar para área protegida
+  // Contexto super admin — reescreve UI para /super-admin/*
+  // Rotas de API (/api/*) NÃO são reescritas — já estão no caminho correto
   if (host.split(':')[0] === 'admin.beautly.com') {
+    const pathname = req.nextUrl.pathname
+    // Não reescrever rotas de API — elas são acessadas diretamente
+    if (!pathname.startsWith('/api/')) {
+      const rewriteUrl = new URL(`/super-admin${pathname === '/' ? '' : pathname}`, req.url)
+      const res = NextResponse.rewrite(rewriteUrl)
+      res.headers.set('x-context', 'super-admin')
+      return res
+    }
     const res = NextResponse.next()
     res.headers.set('x-context', 'super-admin')
     return res
