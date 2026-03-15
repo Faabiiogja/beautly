@@ -90,11 +90,13 @@ Estado entre passos é passado via `searchParams` na URL (`serviceId`, `professi
 
 ### 3.5 Confirmação — `app/book/done/page.tsx`
 
+- Recebe `bookingId` via `searchParams`
+- Server Component — carrega detalhes via `getBookingById(bookingId, tenantId)` onde `tenantId` vem de `getCurrentTenant()`. Query obrigatoriamente filtra `WHERE id = $1 AND tenant_id = $2` — booking de outro tenant retorna null (exibe mensagem genérica)
 - Mensagem: "Agendado! Em breve você recebe o link por WhatsApp."
-- Resumo do agendamento (serviço, data, hora)
+- Resumo do agendamento: serviço, profissional, data, hora
 - Sem exibir o link `/b/[token]` — cliente recebe pelo WhatsApp
 - Em `NODE_ENV === 'development'`: exibe o link visível para facilitar testes
-- Server Component
+- `bookingId` inválido: exibe mensagem genérica sem dados de resumo
 
 ### 3.6 Visualização do Agendamento — `app/b/[token]/page.tsx`
 
@@ -113,12 +115,16 @@ Estado entre passos é passado via `searchParams` na URL (`serviceId`, `professi
 
 Consulta slots disponíveis para um profissional em uma data.
 
-**Query params:** `tenantId`, `professionalId`, `serviceId`, `date` (YYYY-MM-DD)
+**Query params:** `professionalId`, `serviceId`, `date` (YYYY-MM-DD) — `tenantId` derivado do host
 
 **Response:**
 ```json
 { "slots": ["2026-03-18T09:00:00Z", "2026-03-18T09:45:00Z", ...] }
 ```
+
+**Validação de tenant:** o handler verifica que `professional.tenant_id = tenantId` e `service.tenant_id = tenantId` antes de computar slots. Retorna 400 se qualquer um não pertencer ao tenant.
+
+**Nota sobre `tenantId`:** o handler deriva `tenantId` do host header via `getCurrentTenant()` — não aceita `tenantId` como parâmetro de query. O cliente passa apenas `professionalId`, `serviceId` e `date`. Isso garante que o tenant seja sempre o da requisição atual.
 
 **Lógica:** implementada em `lib/availability.ts` (já definida no MVP design doc):
 1. Obtém `business_hours` do tenant para o dia da semana
@@ -136,13 +142,19 @@ Consulta slots disponíveis para um profissional em uma data.
 Chamada no submit do formulário de confirmação.
 
 **Passos:**
-1. Valida `formData` com Zod (nome, telefone, serviceId, professionalId, slot)
-2. Normaliza telefone para E.164
-3. Upsert em `customers` (`UNIQUE(tenant_id, phone)`) — cria ou reutiliza
-4. `INSERT INTO bookings` — se constraint `no_double_booking` falhar → retorna erro "Horário não disponível"
-5. `INSERT INTO booking_tokens` com `expires_at = booking.ends_at + 2 dias`
-6. Chama `whatsapp.sendBookingConfirmation()` (mockado em dev)
-7. `redirect('/book/done?bookingId=...')`
+1. Obtém `tenantId` via `getCurrentTenant()` (host header) — 404 se tenant inativo
+2. Valida `formData` com Zod (nome, telefone, serviceId, professionalId, slot — UTC ISO-8601, obrigatório terminar com `Z` ou conter offset explícito)
+3. Verifica que `service.tenant_id = tenantId` e `professional.tenant_id = tenantId` — 400 se não pertencerem ao tenant
+4. Normaliza telefone para E.164
+5. Re-valida slot server-side: chama `getAvailableSlots({ tenantId, professionalId, serviceId, date })` e verifica que o slot solicitado está na lista — se não estiver, retorna erro "Horário não disponível, escolha outro"
+6. Calcula `ends_at = slot + service.duration_minutes + service.buffer_minutes`
+7. Upsert em `customers`: `INSERT ... ON CONFLICT (tenant_id, phone) DO NOTHING` seguido de `SELECT id FROM customers WHERE tenant_id = ? AND phone = ?` — garante obtenção do `customer_id` independente de conflito
+8. `INSERT INTO bookings` com `starts_at = slot`, `ends_at` calculado, `status = 'confirmed'` — se o índice `idx_no_double_booking` rejeitar (race condition), retorna erro "Horário não disponível"
+9. `INSERT INTO booking_tokens` com `expires_at = ends_at + 2 dias`
+10. Chama `whatsapp.sendBookingConfirmation()` (mockado em dev)
+11. `redirect('/book/done?bookingId=...')`
+
+**Nota sobre `idx_no_double_booking`:** é um `UNIQUE INDEX` em `(professional_id, starts_at) WHERE status NOT IN ('cancelled', 'rescheduled')` criado em `20260314000003_indexes.sql`. Suficiente para slots discretos gerados pelo algoritmo de disponibilidade.
 
 ---
 
@@ -183,7 +195,9 @@ Algoritmo completo definido no MVP design doc (seção 12).
 - Zod em toda borda: `confirmBooking()` Server Action + `/api/availability`
 - `phone` nunca retornado em responses públicas
 - Token de 64 chars hex (256 bits de entropia) — `randomBytes(32).toString('hex')`
-- Cookie httpOnly com token (7 dias) para conveniência no mesmo dispositivo
+- Acesso ao `/b/[token]` é exclusivamente via link WhatsApp — sem cookie de conveniência no MVP
+- Token válido: `expires_at > now()` AND `revoked_at IS NULL`. `used_at` não é marcado na visualização — campo reservado para uso futuro
+- `revoked_at` não é definido pelo booking flow no MVP (sem cancelamento pelo cliente). Campo reservado para Fase 2
 - Tenant ativo verificado em cada request via `getCurrentTenant()` — tenant inativo retorna 404
 - `service_role` key em todas as queries do booking flow (sem auth do usuário)
 
@@ -206,7 +220,7 @@ app/api/
 
 domain/bookings/
   actions.ts                            → confirmBooking() Server Action
-  queries.ts                            → getBookingByToken(), getBookingsByDate()
+  queries.ts                            → getBookingByToken(), getBookingById(), getBookingsByDate()
   types.ts                              → tipos de domínio
 
 lib/
@@ -222,13 +236,23 @@ lib/
 - Next.js 15 App Router (Server Components + Server Actions + Route Handlers)
 - `@supabase/ssr` service client — queries sem RLS
 - `zod` — validação de inputs
-- `date-fns` — manipulação de datas e timezones
+- `date-fns` + `date-fns-tz` — manipulação de datas e conversão de IANA timezones (`America/Sao_Paulo`)
 - shadcn/ui `Calendar`, `Button`, `Input`, `Badge` — já instalados
 - `crypto` (Node built-in) — geração de token
 
 ---
 
-## 11. Notas de UX
+## 11. Decisões e Limitações Conhecidas
+
+- **Rotas sem route group:** o booking flow usa caminhos reais (`app/page.tsx`, `app/book/`, `app/b/`) — não usa `app/(booking)/`. O MVP design doc mostrava route groups, mas a decisão final (consistente com o super-admin em `app/super-admin/`) é usar prefixos de path reais.
+- **Nome do cliente não atualizado:** ao reagendar com nome diferente, o nome original é preservado. Decisão intencional do MVP — comportamento documentado, não bug.
+- **Sem reserva temporária de slot:** slot pode ser perdido para outra cliente durante o preenchimento do formulário. A cliente recebe erro "Horário não disponível" e deve escolher outro.
+- **WhatsApp:** mockado em dev via `WHATSAPP_MOCK=true`. Integração real (Meta Cloud API) fora do escopo deste MVP.
+- **Cancelamento/reagendamento:** fora do escopo — apenas visualização em `/b/[token]`.
+
+---
+
+## 12. Notas de UX
 
 - Cor primária do tenant aplicada nos botões e destaques de seleção
 - Indicador de progresso no topo do wizard (ex: barra ou "Passo 2 de 3")
