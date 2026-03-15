@@ -9,10 +9,11 @@ export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname
 
   // Contexto super admin — beautly.cloud + path /admin/*
-  // O rewrite /admin/* → /super-admin/* é feito via vercel.json na cloud.
-  // Em dev local, acessar /super-admin diretamente.
+  // Rewrite interno: /admin/* → /super-admin/* (middleware, não vercel.json)
   if (hostname === 'beautly.cloud' && pathname.startsWith('/admin')) {
-    const res = NextResponse.next()
+    const superAdminPath = pathname.replace(/^\/admin/, '/super-admin')
+    const rewriteUrl = new URL(superAdminPath, req.url)
+    const res = NextResponse.rewrite(rewriteUrl)
     res.headers.set('x-context', 'super-admin')
     return res
   }
