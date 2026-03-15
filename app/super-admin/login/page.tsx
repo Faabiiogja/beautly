@@ -26,7 +26,7 @@ export default function SuperAdminLoginPage() {
       })
 
       if (res.ok) {
-        router.push('/')
+        router.push('/admin')
         router.refresh()
       } else {
         const data = await res.json()
