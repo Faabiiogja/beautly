@@ -69,6 +69,11 @@ export function ConfirmForm({
           Ocorreu um erro no servidor. Tente novamente em instantes.
         </div>
       )}
+      {state?.error && state.error !== 'slot_unavailable' && state.error !== 'server_error' && !state.fieldErrors && (
+        <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 mb-4">
+          Não foi possível confirmar. Verifique os dados e tente novamente.
+        </div>
+      )}
 
       {/* Seus dados */}
       <div className="rounded-3xl border border-stone-200 bg-white p-5 flex flex-col gap-4">
@@ -86,6 +91,7 @@ export function ConfirmForm({
             name="customerName"
             type="text"
             autoComplete="name"
+            aria-invalid={!!state?.fieldErrors?.customerName}
             className={[
               'rounded-xl border bg-white px-4 py-3 text-sm outline-none focus:border-stone-400 w-full',
               fieldErrors?.customerName ? 'border-red-300' : 'border-stone-200',
@@ -107,6 +113,7 @@ export function ConfirmForm({
             type="tel"
             autoComplete="tel"
             placeholder="+5511999999999"
+            aria-invalid={!!state?.fieldErrors?.customerPhone}
             className={[
               'rounded-xl border bg-white px-4 py-3 text-sm outline-none focus:border-stone-400 w-full',
               fieldErrors?.customerPhone ? 'border-red-300' : 'border-stone-200',

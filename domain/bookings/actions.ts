@@ -84,28 +84,23 @@ export async function confirmBookingLogic(
       (service.duration_minutes + service.buffer_minutes) * 60 * 1000
   )
 
-  await supabase.from('customers').insert({
-    tenant_id: tenant.id,
-    name: customerName,
-    phone: customerPhone,
-  })
-
-  const { data: existingCustomer } = await supabase
+  // Upsert customer — insert or update if already exists (match on tenant_id + phone)
+  const { data: customer, error: customerError } = await supabase
     .from('customers')
+    .upsert(
+      { tenant_id: tenant.id, name: customerName, phone: customerPhone },
+      { onConflict: 'tenant_id,phone', ignoreDuplicates: false }
+    )
     .select('id')
-    .eq('tenant_id', tenant.id)
-    .eq('phone', customerPhone)
     .single()
 
-  if (!existingCustomer) {
-    return { success: false, error: 'server_error' }
-  }
+  if (customerError || !customer) return { success: false, error: 'server_error' }
 
   const { data: booking, error: bookingError } = await supabase
     .from('bookings')
     .insert({
       tenant_id: tenant.id,
-      customer_id: existingCustomer.id,
+      customer_id: customer.id,
       service_id: serviceId,
       professional_id: professionalId,
       starts_at: slot,
