@@ -1,24 +1,27 @@
 // middleware.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { extractTenantSlug } from '@/lib/tenant'
+import { extractTenantSlug, MARKETING_HOSTS } from '@/lib/tenant'
 
 export async function middleware(req: NextRequest) {
   const host = req.headers.get('host') ?? ''
+  const hostname = host.split(':')[0]
+  const pathname = req.nextUrl.pathname
 
-  // Contexto super admin — reescreve UI para /super-admin/*
-  // Rotas de API (/api/*) NÃO são reescritas — já estão no caminho correto
-  const superAdminHosts = ['admin.beautly.com', 'beautly-admin.vercel.app']
-  if (superAdminHosts.includes(host.split(':')[0])) {
-    const pathname = req.nextUrl.pathname
-    if (!pathname.startsWith('/api/')) {
-      const rewriteUrl = new URL(`/super-admin${pathname === '/' ? '' : pathname}`, req.url)
-      const res = NextResponse.rewrite(rewriteUrl)
-      res.headers.set('x-context', 'super-admin')
-      return res
-    }
+  // Contexto super admin — beautly.cloud + path /admin/*
+  // O rewrite /admin/* → /super-admin/* é feito via vercel.json na cloud.
+  // Em dev local, acessar /super-admin diretamente.
+  if (hostname === 'beautly.cloud' && pathname.startsWith('/admin')) {
     const res = NextResponse.next()
     res.headers.set('x-context', 'super-admin')
+    return res
+  }
+
+  // Contexto marketing — qualquer host de marketing (beautly.cloud, www.beautly.cloud)
+  // www.beautly.cloud/admin NÃO é super admin — serve marketing normalmente.
+  if (MARKETING_HOSTS.has(hostname)) {
+    const res = NextResponse.next()
+    res.headers.set('x-context', 'marketing')
     return res
   }
 
@@ -27,12 +30,9 @@ export async function middleware(req: NextRequest) {
   const devFallback = process.env.DEV_TENANT_SLUG ?? 'demo'
   const previewFallback = process.env.PREVIEW_TENANT_SLUG ?? 'demo'
 
-  const hostname = host.split(':')[0]
   const isLocal = hostname === 'localhost' || hostname === '127.0.0.1'
   const isPreview = hostname.endsWith('.vercel.app')
-  const fallback = isLocal || isPreview
-    ? (isPreview ? previewFallback : devFallback)
-    : 'demo'
+  const fallback = isPreview ? previewFallback : isLocal ? devFallback : 'demo'
 
   const slug = extractTenantSlug(host, fallback)
 
