@@ -6,13 +6,15 @@ type Props = {
 }
 
 export function HeroSection({ name, logoUrl }: Props) {
+  const safeLogo = logoUrl?.startsWith('https://') ? logoUrl : null
+
   return (
     <section className="relative min-h-[60vh] flex flex-col justify-end md:flex-row md:items-center overflow-hidden bg-[#0a0a0a]">
       {/* Background: image or gradient */}
-      {logoUrl ? (
+      {safeLogo ? (
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${encodeURI(logoUrl)})` }}
+          style={{ backgroundImage: `url(${safeLogo})` }}
           aria-hidden="true"
         />
       ) : (
