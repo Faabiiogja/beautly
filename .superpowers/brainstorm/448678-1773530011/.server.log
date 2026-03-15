@@ -1,0 +1,9 @@
+{"type":"server-started","port":64706,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:64706","screen_dir":"/home/fabio/Projetos/Beautly/.superpowers/brainstorm/448678-1773530011"}
+{"type":"screen-added","file":"/home/fabio/Projetos/Beautly/.superpowers/brainstorm/448678-1773530011/architecture-overview.html"}
+{"type":"screen-added","file":"/home/fabio/Projetos/Beautly/.superpowers/brainstorm/448678-1773530011/architecture-v2.html"}
+{"type":"screen-added","file":"/home/fabio/Projetos/Beautly/.superpowers/brainstorm/448678-1773530011/data-model.html"}
+{"type":"screen-added","file":"/home/fabio/Projetos/Beautly/.superpowers/brainstorm/448678-1773530011/data-model-v2.html"}
+{"type":"screen-added","file":"/home/fabio/Projetos/Beautly/.superpowers/brainstorm/448678-1773530011/multitenant-auth.html"}
+{"type":"screen-added","file":"/home/fabio/Projetos/Beautly/.superpowers/brainstorm/448678-1773530011/folder-structure.html"}
+{"type":"screen-added","file":"/home/fabio/Projetos/Beautly/.superpowers/brainstorm/448678-1773530011/roadmap.html"}
+{"type":"server-stopped","reason":"idle timeout"}
