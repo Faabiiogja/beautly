@@ -1,3 +1,9 @@
 {
-  "alias": ["beautly-admin.vercel.app"]
+  "rewrites": [
+    {
+      "source": "/admin/:path*",
+      "destination": "/super-admin/:path*",
+      "has": [{ "type": "host", "value": "beautly.cloud" }]
+    }
+  ]
 }
