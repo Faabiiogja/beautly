@@ -14,10 +14,10 @@ Replace the current behavior where `{slug}.beautly.cloud` renders the marketing 
 
 ## Scope (MVP)
 
-- Hero section: studio name + tagline + CTA button
+- Hero section: studio name + CTA button + logo (if available) or gradient placeholder
 - Services section: grid of active services (name, price, duration)
 - No professionals section (future)
-- No booking flow integration (CTA is static for MVP)
+- No booking flow integration (CTA is static for MVP — `<button>` element, not `<a>`)
 - Mobile-first, responsive up to desktop
 
 ---
@@ -26,44 +26,62 @@ Replace the current behavior where `{slug}.beautly.cloud` renders the marketing 
 
 ### Context Detection
 
-`app/page.tsx` is a Server Component. It reads the `x-context` and `x-tenant-slug` request headers injected by `middleware.ts`:
+`app/page.tsx` is a Server Component. It reads the `x-context` and `x-tenant-slug` request headers injected by `middleware.ts`. No changes to `middleware.ts` are required.
 
 ```typescript
 import { headers } from 'next/headers'
 import { TenantHomePage } from '@/components/tenant/home-page'
-import BeautlyLandingPage from '@/components/marketing/landing-page'
+import { BeautlyLandingPage } from '@/app/_components/marketing/landing-page'
 
 export default async function RootPage() {
   const headersList = await headers()
   const context = headersList.get('x-context')
-  const slug = headersList.get('x-tenant-slug')
 
-  if (context === 'tenant' && slug) {
-    return <TenantHomePage slug={slug} />
+  if (context === 'tenant') {
+    return <TenantHomePage />
   }
   return <BeautlyLandingPage />
 }
 ```
 
-No changes to `middleware.ts` are required.
+Note: `TenantHomePage` reads `x-tenant-slug` internally via `getCurrentTenant()`.
 
 ### Data Fetching
 
-`TenantHomePage` is a Server Component. It uses the Supabase service role client (no RLS) to fetch:
+`TenantHomePage` is a Server Component that uses existing helpers from `lib/tenant.ts`:
 
-1. **Tenant info** from `tenants` table: `name`, `description`, `cover_image_url` filtered by `slug`
-2. **Active services** from `services` table: `id`, `name`, `price`, `duration_minutes` filtered by `tenant_id` and `active = true`, ordered by `name`
+1. **Tenant info**: call `getCurrentTenant()` (already cached via `unstable_cache` with 60s revalidation, filters `status = 'active'`)
+2. **Active services**: call `getServicesByTenantId(tenant.id)` — a new cached function to be added to `lib/tenant.ts`
 
-If the tenant is not found → `notFound()` (renders Next.js 404).
-If services is empty → renders services section with "Em breve" empty state message.
+```typescript
+// Addition to lib/tenant.ts
+export const getServicesByTenantId = unstable_cache(
+  async (tenantId: string) => {
+    const supabase = createSupabaseServiceClient()
+    const { data } = await supabase
+      .from('services')
+      .select('id, name, price, duration_minutes')
+      .eq('tenant_id', tenantId)
+      .eq('is_active', true)
+      .order('name')
+    return data ?? []
+  },
+  ['services-by-tenant'],
+  { revalidate: 60 }
+)
+```
+
+If `getCurrentTenant()` returns null → `notFound()` (renders Next.js 404).
+If services array is empty → render services section with "Em breve" empty state.
+If Supabase throws → propagate to Next.js error boundary.
 
 ### Component Tree
 
 ```
 app/page.tsx                          ← Server Component (context switch)
 components/tenant/
-  home-page.tsx                       ← Server Component (fetch + layout orchestration)
-  hero-section.tsx                    ← Studio name, tagline, CTA button
+  home-page.tsx                       ← Server Component (calls getCurrentTenant + getServicesByTenantId, layout)
+  hero-section.tsx                    ← Studio name, CTA button, logo or gradient placeholder
   services-section.tsx                ← Section title, "Ver todos" link, service grid
   service-card.tsx                    ← Individual card: name, price (R$), duration (min)
 ```
@@ -72,24 +90,25 @@ components/tenant/
 
 ## Data Models
 
-### `tenants` table (existing)
-| Column | Type | Used |
-|--------|------|------|
+### `tenants` table (existing columns used)
+| Column | Type | Used for |
+|--------|------|----------|
 | id | uuid | FK for services query |
-| slug | text | lookup key |
+| slug | text | resolved via `getCurrentTenant()` |
 | name | text | display in hero |
-| description | text | tagline in hero (nullable) |
-| cover_image_url | text | hero image (nullable) |
+| logo_url | text \| null | hero image (gradient placeholder if null) |
+| primary_color | text (NOT NULL) | accent color — always present, bank enforces DEFAULT `'#ec4899'` |
+| status | text | filtered to `'active'` by `getTenantBySlug` |
 
-### `services` table (existing)
-| Column | Type | Used |
-|--------|------|------|
+### `services` table (existing columns used)
+| Column | Type | Used for |
+|--------|------|----------|
 | id | uuid | React key |
 | tenant_id | uuid | filter |
 | name | text | card title |
-| price | numeric | formatted as R$ |
-| duration_minutes | integer | formatted as "X min" |
-| active | boolean | filter (only active) |
+| price | number | formatted as "R$ 80,00" |
+| duration_minutes | number | formatted as "60 min" |
+| is_active | boolean | filter (only `true`) |
 
 ---
 
@@ -97,20 +116,20 @@ components/tenant/
 
 Follows the Stitch "Studio Demo Landing Page" screens:
 
-**Mobile (primary):**
+**Mobile (primary, 390px):**
 - Dark background (`#0a0a0a`)
 - Pink accent (`#ec4899`)
 - Header: studio name + "Agendar agora" button
-- Hero: full-width image, overlay with name + subtitle + CTA
-- Services: vertical list cards (name, price, duration)
+- Hero: logo image (or dark→pink gradient placeholder), overlay with studio name + CTA
+- Services: vertical list of cards (name, price, duration)
 - Footer: "© {year} {studio name} · Powered by Beautly"
 
-**Desktop:**
-- Hero: text left / image right split layout
+**Desktop (1440px):**
+- Hero: text left / logo-or-placeholder right split layout
 - Services: 4-column grid
 - Same color system
 
-**CTA button "Agendar agora":** Static for MVP (no `href`). Will link to booking flow in a future sprint.
+**CTA "Agendar agora":** Rendered as `<button type="button">` (not `<a>`). Static for MVP — will receive `onClick` / `href` in the booking flow sprint. Add `title="Em breve"` for accessibility.
 
 ---
 
@@ -118,11 +137,10 @@ Follows the Stitch "Studio Demo Landing Page" screens:
 
 | Scenario | Behavior |
 |----------|----------|
-| Tenant slug not found in DB | `notFound()` → Next.js 404 page |
-| `cover_image_url` is null | Show gradient placeholder (dark → pink) |
-| `description` is null | Skip tagline, show name only in hero |
-| No active services | Show services section with "Em breve" message |
-| Supabase error | Throw → Next.js error boundary |
+| `getCurrentTenant()` returns null | `notFound()` → Next.js 404 page |
+| `logo_url` is null | Show dark → pink gradient as hero background |
+| No active services | Show services section with "Em breve" paragraph |
+| `getServicesByTenantId` throws | Propagate → Next.js error boundary |
 
 ---
 
@@ -130,9 +148,10 @@ Follows the Stitch "Studio Demo Landing Page" screens:
 
 | File | What it tests |
 |------|---------------|
-| `__tests__/app/page.test.tsx` | With `x-context: tenant` → renders `TenantHomePage`; with `x-context: marketing` → renders `BeautlyLandingPage` |
-| `__tests__/components/tenant/home-page.test.tsx` | Mocked Supabase: studio name renders, service list renders, notFound called when tenant missing |
-| `__tests__/components/tenant/service-card.test.tsx` | Price formatted as "R$ 80,00", duration formatted as "60 min" |
+| `__tests__/app/page.test.tsx` | `x-context: tenant` → renders `TenantHomePage`; `x-context: marketing` → renders `BeautlyLandingPage` |
+| `__tests__/components/tenant/home-page.test.tsx` | Mocked `getCurrentTenant` + `getServicesByTenantId`: renders studio name; renders service list; calls `notFound()` when tenant is null; renders empty state when services array is empty |
+| `__tests__/components/tenant/service-card.test.tsx` | Price formatted as "R$ 80,00"; duration formatted as "60 min" |
+| `__tests__/lib/tenant.test.ts` | `getServicesByTenantId` filters by `tenant_id` and `is_active = true` |
 
 ---
 
@@ -140,5 +159,6 @@ Follows the Stitch "Studio Demo Landing Page" screens:
 
 - Booking flow integration (CTA button functional)
 - Professionals section
-- Tenant-specific theming (custom colors)
+- Tenant-specific theming (custom primary_color applied dynamically)
 - i18n
+- DB migration to add `description` / `cover_image_url` columns (deferred)
