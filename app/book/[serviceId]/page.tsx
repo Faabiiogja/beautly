@@ -32,7 +32,7 @@ export default async function ServicePage({ params }: PageProps) {
   // Valida se o servico pertence ao tenant
   const { data: service } = await supabase
     .from('services')
-    .select('id, name, duration_minutes')
+    .select('id, name, price, duration_minutes')
     .eq('id', serviceId)
     .eq('tenant_id', tenant.id)
     .eq('is_active', true)
@@ -69,7 +69,7 @@ export default async function ServicePage({ params }: PageProps) {
             </p>
             <h1 className="mt-1 text-lg font-semibold tracking-[-0.03em] text-stone-900">
               {activeProfessionals.length === 1
-                ? 'Escolha o horario'
+                ? 'Escolha o horário'
                 : 'Escolha o profissional'}
             </h1>
           </div>
@@ -77,10 +77,19 @@ export default async function ServicePage({ params }: PageProps) {
       </header>
 
       <section className="mx-auto max-w-3xl px-6 py-8">
+        {/* Servico selecionado */}
+        <div className="mb-6 rounded-2xl border border-stone-100 bg-white px-4 py-3 shadow-sm">
+          <p className="text-sm font-medium text-stone-600">{service.name}</p>
+          <p className="text-xs text-stone-400">
+            {service.duration_minutes} min &middot; R${' '}
+            {Number(service.price).toFixed(2).replace('.', ',')}
+          </p>
+        </div>
+
         {/* Nenhum profissional */}
         {activeProfessionals.length === 0 && (
           <div className="rounded-3xl border border-dashed border-stone-300 bg-white px-6 py-14 text-center text-sm text-stone-500">
-            Nenhum profissional disponivel no momento.
+            Nenhum profissional disponível no momento.
           </div>
         )}
 

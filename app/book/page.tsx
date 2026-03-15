@@ -38,7 +38,7 @@ export default async function BookPage() {
               Passo 1 de 3
             </p>
             <h1 className="mt-1 text-lg font-semibold tracking-[-0.03em] text-stone-900">
-              Escolha o servico
+              Escolha o serviço
             </h1>
           </div>
         </div>
@@ -47,7 +47,7 @@ export default async function BookPage() {
       <section className="mx-auto flex max-w-3xl flex-col gap-3 px-6 py-8">
         {activeServices.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-stone-300 bg-white px-6 py-14 text-center text-sm text-stone-500">
-            Nenhum servico disponivel no momento.
+            Nenhum serviço disponível no momento.
           </div>
         ) : null}
 

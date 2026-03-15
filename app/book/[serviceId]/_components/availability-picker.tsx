@@ -70,6 +70,7 @@ export function AvailabilityPicker({
   const [slots, setSlots] = useState<Slot[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   // Gera os proximos 30 dias como opcoes de data
   const today = new Date()
@@ -83,6 +84,7 @@ export function AvailabilityPicker({
     setSelectedDate(date)
     setSlots([])
     setSelectedSlot(null)
+    setError(null)
     setLoadingSlots(true)
 
     const dateStr = getDateKey(date, timezone)
@@ -91,6 +93,10 @@ export function AvailabilityPicker({
       const res = await fetch(
         `/api/availability?professionalId=${professionalId}&serviceId=${serviceId}&date=${dateStr}`
       )
+      if (!res.ok) {
+        setError('Erro ao carregar horários. Tente novamente.')
+        return
+      }
       const json = await res.json()
       const fetched: Slot[] = (json.slots ?? []).map((utc: string) => ({
         utc,
@@ -98,7 +104,7 @@ export function AvailabilityPicker({
       }))
       setSlots(fetched)
     } catch {
-      setSlots([])
+      setError('Erro ao carregar horários. Tente novamente.')
     } finally {
       setLoadingSlots(false)
     }
@@ -180,14 +186,18 @@ export function AvailabilityPicker({
             <div className="flex items-center justify-center py-10">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-stone-200" style={{ borderTopColor: primary }} />
             </div>
+          ) : error ? (
+            <div className="rounded-3xl border border-dashed border-red-200 bg-red-50 px-6 py-10 text-center text-sm text-red-600">
+              {error}
+            </div>
           ) : slots.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-stone-300 bg-white px-6 py-10 text-center text-sm text-stone-500">
-              Nenhum horario disponivel para este dia.
+              Nenhum horário disponível para este dia.
             </div>
           ) : (
             <div className="space-y-5">
               {[
-                { label: 'Manha', items: morningSlots },
+                { label: 'Manhã', items: morningSlots },
                 { label: 'Tarde', items: afternoonSlots },
                 { label: 'Noite', items: eveningSlots },
               ]
@@ -226,7 +236,7 @@ export function AvailabilityPicker({
 
       {!selectedDate && (
         <div className="rounded-3xl border border-dashed border-stone-200 bg-white px-6 py-10 text-center text-sm text-stone-400">
-          Selecione uma data para ver os horarios disponiveis.
+          Selecione uma data para ver os horários disponíveis.
         </div>
       )}
     </div>
