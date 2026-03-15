@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { extractTenantSlug } from '@/lib/tenant'
 
 // getTenantBySlug e getCurrentTenant envolvem Supabase e next/cache —
