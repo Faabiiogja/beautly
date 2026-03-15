@@ -1,0 +1,87 @@
+<h2>Arquitetura Geral — Beautly MVP</h2>
+<p class="subtitle">Next.js Monolito · App Router · Vercel · Supabase</p>
+
+<div class="section">
+  <div style="background:#0f172a;border-radius:12px;padding:28px;font-family:monospace;font-size:13px;line-height:1.8;color:#e2e8f0;">
+    <div style="color:#94a3b8;margin-bottom:16px;">── Request Flow ──────────────────────────────────────</div>
+
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;">
+      <span style="color:#38bdf8;min-width:220px;">Browser (celular/web)</span>
+      <span style="color:#64748b;">→</span>
+      <span style="color:#f8fafc;">nomedaestetica.beautly.com</span>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;">
+      <span style="color:#38bdf8;min-width:220px;">Vercel Edge Network</span>
+      <span style="color:#64748b;">→</span>
+      <span style="color:#f8fafc;"><strong>middleware.ts</strong> <span style="color:#fbbf24;">(identifica tenant pelo host)</span></span>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;">
+      <span style="color:#38bdf8;min-width:220px;">Next.js App Router</span>
+      <span style="color:#64748b;">→</span>
+      <span style="color:#f8fafc;">roteia para booking <em>ou</em> admin</span>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:24px;">
+      <span style="color:#38bdf8;min-width:220px;">Server Components / API</span>
+      <span style="color:#64748b;">→</span>
+      <span style="color:#f8fafc;">Supabase PostgreSQL</span>
+    </div>
+
+    <div style="color:#94a3b8;margin-bottom:16px;">── Estrutura de Rotas ─────────────────────────────────</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+      <div style="background:#1e293b;border-radius:8px;padding:16px;border-left:3px solid #ec4899;">
+        <div style="color:#ec4899;font-weight:bold;margin-bottom:8px;">🌸 Área Pública (Booking)</div>
+        <div style="color:#cbd5e1;">app/(booking)/</div>
+        <div style="color:#94a3b8;font-size:12px;margin-top:4px;">• página inicial da estética<br>• seleção de serviço<br>• calendário / horários<br>• dados do cliente<br>• confirmação<br>• página do agendamento (token)</div>
+      </div>
+      <div style="background:#1e293b;border-radius:8px;padding:16px;border-left:3px solid #6366f1;">
+        <div style="color:#6366f1;font-weight:bold;margin-bottom:8px;">🔒 Área Admin</div>
+        <div style="color:#cbd5e1;">app/(admin)/dashboard/</div>
+        <div style="color:#94a3b8;font-size:12px;margin-top:4px;">• login (Supabase Auth)<br>• gestão de serviços<br>• agenda do dia<br>• configurações do negócio<br>• bloqueios de horário</div>
+      </div>
+    </div>
+
+    <div style="color:#94a3b8;margin-bottom:16px;">── Integrações Externas ───────────────────────────────</div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="background:#1e293b;border-radius:8px;padding:12px 16px;border:1px solid #334155;">
+        <span style="color:#22c55e;">✓</span> <span style="color:#f8fafc;">Supabase Auth</span>
+        <div style="color:#94a3b8;font-size:11px;">auth admin (email+senha)</div>
+      </div>
+      <div style="background:#1e293b;border-radius:8px;padding:12px 16px;border:1px solid #334155;">
+        <span style="color:#22c55e;">✓</span> <span style="color:#f8fafc;">Supabase DB</span>
+        <div style="color:#94a3b8;font-size:11px;">PostgreSQL shared</div>
+      </div>
+      <div style="background:#1e293b;border-radius:8px;padding:12px 16px;border:1px solid #334155;">
+        <span style="color:#22c55e;">✓</span> <span style="color:#f8fafc;">Meta Cloud API</span>
+        <div style="color:#94a3b8;font-size:11px;">WhatsApp confirmações</div>
+      </div>
+      <div style="background:#1e293b;border-radius:8px;padding:12px 16px;border:1px solid #334155;">
+        <span style="color:#22c55e;">✓</span> <span style="color:#f8fafc;">Vercel</span>
+        <div style="color:#94a3b8;font-size:11px;">deploy + wildcard DNS</div>
+      </div>
+      <div style="background:#1e293b;border-radius:8px;padding:12px 16px;border:1px solid #334155;">
+        <span style="color:#22c55e;">✓</span> <span style="color:#f8fafc;">Supabase Storage</span>
+        <div style="color:#94a3b8;font-size:11px;">upload de logos</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Princípios aplicados</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+    <div style="background:#0f172a;border-radius:8px;padding:14px;">
+      <div style="color:#fbbf24;font-weight:bold;margin-bottom:6px;">Shared DB</div>
+      <div style="color:#94a3b8;font-size:12px;">PostgreSQL único com <code style="color:#38bdf8;">tenant_id</code> em todas as tabelas. Row-Level Security via Supabase garante isolamento.</div>
+    </div>
+    <div style="background:#0f172a;border-radius:8px;padding:14px;">
+      <div style="color:#fbbf24;font-weight:bold;margin-bottom:6px;">Edge Middleware</div>
+      <div style="color:#94a3b8;font-size:12px;">Resolve tenant pelo host antes de qualquer Server Component rodar. Zero roundtrip extra.</div>
+    </div>
+    <div style="background:#0f172a;border-radius:8px;padding:14px;">
+      <div style="color:#fbbf24;font-weight:bold;margin-bottom:6px;">Server Components</div>
+      <div style="color:#94a3b8;font-size:12px;">Dados carregados no servidor. Cliente recebe HTML pronto. Mobile sente na velocidade.</div>
+    </div>
+  </div>
+</div>

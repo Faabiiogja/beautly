@@ -1,0 +1,166 @@
+<h2>Roadmap Técnico — Beautly</h2>
+<p class="subtitle">3 fases · do MVP funcional à escala premium</p>
+
+<div class="section">
+
+  <!-- Fase 1 -->
+  <div style="background:#0f172a;border-radius:12px;padding:22px;margin-bottom:16px;border-left:4px solid #ec4899;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <span style="background:#ec4899;color:#fff;font-weight:bold;font-size:12px;padding:4px 12px;border-radius:20px;">FASE 1 — MVP</span>
+      <span style="color:#94a3b8;font-size:12px;">Bootstrap → primeiro tenant pagando</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+
+      <div style="background:#1e293b;border-radius:8px;padding:14px;">
+        <div style="color:#ec4899;font-weight:bold;font-size:12px;margin-bottom:8px;">🏗️ Infraestrutura</div>
+        <div style="font-size:11px;color:#cbd5e1;line-height:1.9;">
+          ☐ Projeto Next.js + config<br>
+          ☐ Supabase: projeto + migrations<br>
+          ☐ Vercel: wildcard DNS<br>
+          ☐ Variáveis de ambiente<br>
+          ☐ Middleware multi-tenant<br>
+          ☐ RLS em todas as tabelas<br>
+          ☐ CI básico (GitHub Actions)
+        </div>
+      </div>
+
+      <div style="background:#1e293b;border-radius:8px;padding:14px;">
+        <div style="color:#ec4899;font-weight:bold;font-size:12px;margin-bottom:8px;">📅 Core Booking</div>
+        <div style="font-size:11px;color:#cbd5e1;line-height:1.9;">
+          ☐ Página pública da estética<br>
+          ☐ Listagem de serviços<br>
+          ☐ Calendário de disponibilidade<br>
+          ☐ Lógica de slots (duration + buffer)<br>
+          ☐ Formulário nome + telefone<br>
+          ☐ Criação de agendamento<br>
+          ☐ Geração de token seguro<br>
+          ☐ Página /b/[token]<br>
+          ☐ Cancelamento via token<br>
+          ☐ Reagendamento via token
+        </div>
+      </div>
+
+      <div style="background:#1e293b;border-radius:8px;padding:14px;">
+        <div style="color:#ec4899;font-weight:bold;font-size:12px;margin-bottom:8px;">🔧 Admin + Plataforma</div>
+        <div style="font-size:11px;color:#cbd5e1;line-height:1.9;">
+          ☐ Auth admin (Supabase Auth)<br>
+          ☐ Dashboard: agenda do dia<br>
+          ☐ CRUD de serviços<br>
+          ☐ CRUD de profissionais<br>
+          ☐ Horários de funcionamento<br>
+          ☐ Bloqueios de agenda<br>
+          ☐ Configurações: nome, logo, cor<br>
+          ☐ Super admin: login<br>
+          ☐ Super admin: tenants + MRR<br>
+          ☐ WhatsApp: confirmação Meta API
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Fase 2 -->
+  <div style="background:#0f172a;border-radius:12px;padding:22px;margin-bottom:16px;border-left:4px solid #6366f1;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <span style="background:#6366f1;color:#fff;font-weight:bold;font-size:12px;padding:4px 12px;border-radius:20px;">FASE 2 — Operacional</span>
+      <span style="color:#94a3b8;font-size:12px;">Após primeiros tenants validados</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+
+      <div style="background:#1e293b;border-radius:8px;padding:14px;">
+        <div style="color:#6366f1;font-weight:bold;font-size:12px;margin-bottom:8px;">📲 Comunicação</div>
+        <div style="font-size:11px;color:#cbd5e1;line-height:1.9;">
+          ○ Lembretes automáticos WhatsApp<br>
+          ○ OTP por WhatsApp (login cliente)<br>
+          ○ Confirmação de presença<br>
+          ○ Notificação ao admin (novo booking)<br>
+          ○ Templates personalizáveis por tenant
+        </div>
+      </div>
+
+      <div style="background:#1e293b;border-radius:8px;padding:14px;">
+        <div style="color:#6366f1;font-weight:bold;font-size:12px;margin-bottom:8px;">📊 Gestão</div>
+        <div style="font-size:11px;color:#cbd5e1;line-height:1.9;">
+          ○ Relatório básico de agendamentos<br>
+          ○ Histórico por cliente<br>
+          ○ Horários por profissional<br>
+          ○ Feriados nacionais automáticos<br>
+          ○ Painel admin mobile-first melhorado<br>
+          ○ Exportar agenda (CSV/PDF)
+        </div>
+      </div>
+
+      <div style="background:#1e293b;border-radius:8px;padding:14px;">
+        <div style="color:#6366f1;font-weight:bold;font-size:12px;margin-bottom:8px;">⚙️ Plataforma</div>
+        <div style="font-size:11px;color:#cbd5e1;line-height:1.9;">
+          ○ Onboarding guiado para novo tenant<br>
+          ○ Domínio customizado por tenant<br>
+          ○ Super admin: métricas por tenant<br>
+          ○ Rate limiting global (Upstash Redis)<br>
+          ○ Logs de erros (Sentry)<br>
+          ○ Monitoramento (Vercel Analytics)
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Fase 3 -->
+  <div style="background:#0f172a;border-radius:12px;padding:22px;border-left:4px solid #f59e0b;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <span style="background:#f59e0b;color:#000;font-weight:bold;font-size:12px;padding:4px 12px;border-radius:20px;">FASE 3 — Premium</span>
+      <span style="color:#94a3b8;font-size:12px;">Escala + monetização avançada</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+
+      <div style="background:#1e293b;border-radius:8px;padding:14px;">
+        <div style="color:#f59e0b;font-weight:bold;font-size:12px;margin-bottom:8px;">💳 Pagamentos</div>
+        <div style="font-size:11px;color:#cbd5e1;line-height:1.9;">
+          ○ Stripe: assinaturas SaaS<br>
+          ○ Pagamento antecipado de serviços<br>
+          ○ Comissão por profissional<br>
+          ○ Relatório financeiro completo<br>
+          ○ Nota fiscal / emissão
+        </div>
+      </div>
+
+      <div style="background:#1e293b;border-radius:8px;padding:14px;">
+        <div style="color:#f59e0b;font-weight:bold;font-size:12px;margin-bottom:8px;">🎯 Recursos Premium</div>
+        <div style="font-size:11px;color:#cbd5e1;line-height:1.9;">
+          ○ Pacotes de serviços<br>
+          ○ Lista de espera automática<br>
+          ○ Avaliação pós-atendimento<br>
+          ○ Programa de fidelidade<br>
+          ○ App nativo (React Native / PWA)<br>
+          ○ Integração Google Calendar
+        </div>
+      </div>
+
+      <div style="background:#1e293b;border-radius:8px;padding:14px;">
+        <div style="color:#f59e0b;font-weight:bold;font-size:12px;margin-bottom:8px;">🏢 Planos SaaS</div>
+        <div style="font-size:11px;color:#cbd5e1;line-height:1.9;">
+          ○ Planos diferenciados por feature<br>
+          ○ Trial grátis com expiração<br>
+          ○ Cobrança automática (Stripe)<br>
+          ○ Portal do cliente (Stripe portal)<br>
+          ○ API pública para integrações<br>
+          ○ White-label opcional
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="section">
+  <h3>Princípio de progressão</h3>
+  <div style="background:#0f172a;border-radius:8px;padding:16px;font-size:12px;color:#cbd5e1;line-height:2;">
+    Cada fase <strong>valida a anterior</strong> antes de construir.<br>
+    Fase 1 → primeiro tenant real usando e pagando.<br>
+    Fase 2 → tenants retendo, operação fluindo sem atrito.<br>
+    Fase 3 → escala com monetização madura.<br><br>
+    <span style="color:#94a3b8;">Não construa Fase 2 antes de ter 3+ tenants ativos na Fase 1.<br>
+    Não construa Fase 3 antes de ter churn sob controle na Fase 2.</span>
+  </div>
+</div>

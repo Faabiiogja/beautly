@@ -1,0 +1,162 @@
+<h2>Estrutura de Pastas — Beautly MVP</h2>
+<p class="subtitle">Next.js App Router · organizada por domínio · pronta para crescer</p>
+
+<div class="section">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+    <!-- Árvore de pastas -->
+    <div style="background:#0f172a;border-radius:10px;padding:20px;font-family:monospace;font-size:11.5px;line-height:1.9;color:#e2e8f0;overflow-x:auto;">
+      <div style="color:#94a3b8;margin-bottom:12px;">beautly/</div>
+
+      <div style="color:#fbbf24;">├── app/</div>
+      <div style="color:#94a3b8;padding-left:16px;">│  <span style="color:#64748b;">-- App Router: 3 contextos</span></div>
+
+      <div style="padding-left:16px;">
+        <div style="color:#f59e0b;">├── (super-admin)/</div>
+        <div style="color:#94a3b8;padding-left:16px;">│  <span style="color:#64748b;">-- admin.beautly.com</span></div>
+        <div style="padding-left:16px;">
+          <div>├── login/page.tsx</div>
+          <div>└── dashboard/</div>
+          <div style="padding-left:16px;">
+            <div>├── page.tsx <span style="color:#64748b;">-- visão geral + MRR</span></div>
+            <div>├── tenants/page.tsx</div>
+            <div>└── tenants/[id]/page.tsx</div>
+          </div>
+        </div>
+
+        <div style="color:#6366f1;margin-top:8px;">├── (admin)/</div>
+        <div style="color:#94a3b8;padding-left:16px;">│  <span style="color:#64748b;">-- nome.beautly.com/admin</span></div>
+        <div style="padding-left:16px;">
+          <div>├── layout.tsx <span style="color:#64748b;">-- valida auth tenant</span></div>
+          <div>├── login/page.tsx</div>
+          <div>└── dashboard/</div>
+          <div style="padding-left:16px;">
+            <div>├── page.tsx <span style="color:#64748b;">-- agenda do dia</span></div>
+            <div>├── services/page.tsx</div>
+            <div>├── professionals/page.tsx</div>
+            <div>├── schedule/page.tsx <span style="color:#64748b;">-- horários + bloqueios</span></div>
+            <div>└── settings/page.tsx</div>
+          </div>
+        </div>
+
+        <div style="color:#ec4899;margin-top:8px;">├── (booking)/</div>
+        <div style="color:#94a3b8;padding-left:16px;">│  <span style="color:#64748b;">-- nome.beautly.com</span></div>
+        <div style="padding-left:16px;">
+          <div>├── page.tsx <span style="color:#64748b;">-- página da estética</span></div>
+          <div>├── book/</div>
+          <div style="padding-left:16px;">
+            <div>├── page.tsx <span style="color:#64748b;">-- seleção serviço</span></div>
+            <div>├── [serviceId]/page.tsx <span style="color:#64748b;">-- calendário</span></div>
+            <div>└── confirm/page.tsx</div>
+          </div>
+          <div>└── b/[token]/</div>
+          <div style="padding-left:16px;">
+            <div>└── page.tsx <span style="color:#64748b;">-- meu agendamento</span></div>
+          </div>
+        </div>
+
+        <div style="margin-top:8px;">├── api/</div>
+        <div style="padding-left:16px;">
+          <div style="color:#22c55e;">├── bookings/route.ts <span style="color:#64748b;">-- POST criar agendamento</span></div>
+          <div style="color:#22c55e;">├── bookings/[token]/route.ts <span style="color:#64748b;">-- GET|PATCH|DELETE</span></div>
+          <div style="color:#22c55e;">├── availability/route.ts <span style="color:#64748b;">-- GET slots disponíveis</span></div>
+          <div style="color:#f59e0b;">├── super/auth/route.ts</div>
+          <div style="color:#6366f1;">├── admin/auth/route.ts</div>
+          <div style="color:#6366f1;">└── admin/[...slug]/route.ts</div>
+        </div>
+
+        <div style="margin-top:8px;">├── layout.tsx <span style="color:#64748b;">-- root layout</span></div>
+        <div>└── not-found.tsx</div>
+      </div>
+
+      <div style="color:#fbbf24;margin-top:12px;">├── lib/</div>
+      <div style="padding-left:16px;">
+        <div>├── supabase/</div>
+        <div style="padding-left:16px;">
+          <div>├── client.ts <span style="color:#64748b;">-- browser client</span></div>
+          <div>├── server.ts <span style="color:#64748b;">-- server client</span></div>
+          <div>└── middleware.ts <span style="color:#64748b;">-- auth helpers</span></div>
+        </div>
+        <div>├── tenant.ts <span style="color:#64748b;">-- resolução slug→tenant</span></div>
+        <div>├── tokens.ts <span style="color:#64748b;">-- gerar/validar tokens</span></div>
+        <div>├── availability.ts <span style="color:#64748b;">-- lógica de slots</span></div>
+        <div>└── whatsapp.ts <span style="color:#64748b;">-- Meta Cloud API</span></div>
+      </div>
+
+      <div style="color:#fbbf24;margin-top:8px;">├── domain/</div>
+      <div style="padding-left:16px;">
+        <div>├── bookings/</div>
+        <div style="padding-left:16px;">
+          <div>├── actions.ts <span style="color:#64748b;">-- Server Actions</span></div>
+          <div>├── queries.ts <span style="color:#64748b;">-- SELECT queries</span></div>
+          <div>└── types.ts</div>
+        </div>
+        <div>├── services/ <span style="color:#64748b;">-- mesma estrutura</span></div>
+        <div>├── professionals/</div>
+        <div>├── tenants/</div>
+        <div>└── schedule/</div>
+      </div>
+
+      <div style="color:#fbbf24;margin-top:8px;">├── components/</div>
+      <div style="padding-left:16px;">
+        <div>├── ui/ <span style="color:#64748b;">-- shadcn/ui (gerado)</span></div>
+        <div>├── booking/ <span style="color:#64748b;">-- componentes do fluxo</span></div>
+        <div>├── admin/ <span style="color:#64748b;">-- componentes do painel</span></div>
+        <div>└── shared/ <span style="color:#64748b;">-- usados em ambos</span></div>
+      </div>
+
+      <div style="color:#fbbf24;margin-top:8px;">├── hooks/ <span style="color:#64748b;">-- custom hooks</span></div>
+      <div style="color:#fbbf24;">├── types/ <span style="color:#64748b;">-- tipos globais</span></div>
+      <div style="color:#fbbf24;">├── validations/ <span style="color:#64748b;">-- schemas Zod</span></div>
+      <div style="color:#fbbf24;">├── middleware.ts <span style="color:#64748b;">-- root middleware</span></div>
+      <div style="color:#fbbf24;">└── supabase/migrations/ <span style="color:#64748b;">-- SQL migrations</span></div>
+    </div>
+
+    <!-- Explicação das camadas -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+      <div style="background:#0f172a;border-radius:10px;padding:16px;">
+        <div style="color:#fbbf24;font-weight:bold;font-size:13px;margin-bottom:8px;">app/ — só UI e roteamento</div>
+        <div style="font-size:12px;color:#94a3b8;line-height:1.8;">
+          Pages e layouts. Nada de lógica de negócio aqui.<br>
+          Route groups <code>(booking)</code>, <code>(admin)</code>, <code>(super-admin)</code> organizam sem afetar a URL.
+        </div>
+      </div>
+
+      <div style="background:#0f172a;border-radius:10px;padding:16px;">
+        <div style="color:#22c55e;font-weight:bold;font-size:13px;margin-bottom:8px;">domain/ — lógica de negócio</div>
+        <div style="font-size:12px;color:#94a3b8;line-height:1.8;">
+          Cada domínio tem: <code>queries.ts</code> (leitura), <code>actions.ts</code> (escrita via Server Actions), <code>types.ts</code>.<br>
+          Testável independente da UI. Fácil de extrair se precisar.
+        </div>
+      </div>
+
+      <div style="background:#0f172a;border-radius:10px;padding:16px;">
+        <div style="color:#38bdf8;font-weight:bold;font-size:13px;margin-bottom:8px;">lib/ — infraestrutura e integrações</div>
+        <div style="font-size:12px;color:#94a3b8;line-height:1.8;">
+          Supabase, tokens, disponibilidade, WhatsApp.<br>
+          Sem acoplamento a React ou Next.js — puro TypeScript.
+        </div>
+      </div>
+
+      <div style="background:#0f172a;border-radius:10px;padding:16px;">
+        <div style="color:#ec4899;font-weight:bold;font-size:13px;margin-bottom:8px;">validations/ — Zod em toda borda</div>
+        <div style="font-size:12px;color:#94a3b8;line-height:1.8;">
+          Schemas compartilhados entre form (client) e Server Action (server).<br>
+          Um schema, dois usos. Nunca validação duplicada.
+        </div>
+      </div>
+
+      <div style="background:#0f172a;border-radius:10px;padding:16px;">
+        <div style="color:#a78bfa;font-weight:bold;font-size:13px;margin-bottom:8px;">Fluxo de dados</div>
+        <div style="font-size:12px;color:#94a3b8;line-height:1.8;">
+          <code>page.tsx</code> chama <code>domain/*/queries.ts</code><br>
+          Forms chamam <code>domain/*/actions.ts</code> (Server Actions)<br>
+          Actions usam <code>lib/</code> para integrações externas<br>
+          Nada de prop drilling — dados no server, estado mínimo no client
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

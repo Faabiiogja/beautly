@@ -1,0 +1,160 @@
+<h2>Modelagem de Dados — Beautly MVP</h2>
+<p class="subtitle">8 tabelas · PostgreSQL · Supabase</p>
+
+<div class="section">
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+
+    <!-- tenants -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #f59e0b;">
+      <div style="color:#f59e0b;font-weight:bold;font-size:13px;margin-bottom:10px;">tenants</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#38bdf8;">slug</span> text UNIQUE <span style="color:#64748b;">-- subdomínio</span><br>
+        name text<br>
+        logo_url text<br>
+        primary_color text <span style="color:#64748b;">-- hex</span><br>
+        monthly_price numeric(10,2)<br>
+        <span style="color:#4ade80;">status</span> text <span style="color:#64748b;">-- active|inactive</span><br>
+        created_at timestamptz<br>
+        updated_at timestamptz
+      </div>
+    </div>
+
+    <!-- tenant_users -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #6366f1;">
+      <div style="color:#6366f1;font-weight:bold;font-size:13px;margin-bottom:10px;">tenant_users</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#fb923c;">tenant_id</span> uuid FK→tenants<br>
+        <span style="color:#fb923c;">user_id</span> uuid FK→auth.users<br>
+        role text <span style="color:#64748b;">-- owner (future: staff)</span><br>
+        created_at timestamptz
+      </div>
+      <div style="margin-top:10px;background:#1e293b;border-radius:6px;padding:8px;font-size:10px;color:#94a3b8;">Liga Supabase Auth ao tenant</div>
+    </div>
+
+    <!-- services -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #ec4899;">
+      <div style="color:#ec4899;font-weight:bold;font-size:13px;margin-bottom:10px;">services</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#fb923c;">tenant_id</span> uuid FK→tenants<br>
+        name text<br>
+        description text<br>
+        price numeric(10,2)<br>
+        duration_minutes int<br>
+        buffer_minutes int <span style="color:#64748b;">-- intervalo após</span><br>
+        is_active boolean<br>
+        created_at timestamptz
+      </div>
+    </div>
+
+    <!-- customers -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #22c55e;">
+      <div style="color:#22c55e;font-weight:bold;font-size:13px;margin-bottom:10px;">customers</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#fb923c;">tenant_id</span> uuid FK→tenants<br>
+        name text<br>
+        phone text <span style="color:#64748b;">-- E.164</span><br>
+        created_at timestamptz<br>
+        <br>
+        <span style="color:#64748b;">UNIQUE(tenant_id, phone)</span>
+      </div>
+      <div style="margin-top:10px;background:#1e293b;border-radius:6px;padding:8px;font-size:10px;color:#94a3b8;">Mesmo telefone pode existir em tenants diferentes</div>
+    </div>
+
+    <!-- bookings -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #38bdf8;">
+      <div style="color:#38bdf8;font-weight:bold;font-size:13px;margin-bottom:10px;">bookings</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#fb923c;">tenant_id</span> uuid FK→tenants<br>
+        <span style="color:#fb923c;">customer_id</span> uuid FK→customers<br>
+        <span style="color:#fb923c;">service_id</span> uuid FK→services<br>
+        starts_at timestamptz<br>
+        ends_at timestamptz <span style="color:#64748b;">-- gerado</span><br>
+        <span style="color:#4ade80;">status</span> text<br>
+        <span style="color:#64748b;">-- confirmed|cancelled</span><br>
+        <span style="color:#64748b;">-- rescheduled|completed</span><br>
+        notes text<br>
+        created_at timestamptz
+      </div>
+    </div>
+
+    <!-- booking_tokens -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #a78bfa;">
+      <div style="color:#a78bfa;font-weight:bold;font-size:13px;margin-bottom:10px;">booking_tokens</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#fb923c;">booking_id</span> uuid FK→bookings<br>
+        <span style="color:#fb923c;">tenant_id</span> uuid FK→tenants<br>
+        token text UNIQUE<br>
+        expires_at timestamptz<br>
+        used_at timestamptz<br>
+        revoked_at timestamptz<br>
+        created_at timestamptz
+      </div>
+      <div style="margin-top:10px;background:#1e293b;border-radius:6px;padding:8px;font-size:10px;color:#94a3b8;">Link seguro para cliente cancelar/reagendar</div>
+    </div>
+
+    <!-- business_hours -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #fb923c;">
+      <div style="color:#fb923c;font-weight:bold;font-size:13px;margin-bottom:10px;">business_hours</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#fb923c;">tenant_id</span> uuid FK→tenants<br>
+        day_of_week int <span style="color:#64748b;">-- 0=Dom..6=Sáb</span><br>
+        is_open boolean<br>
+        open_time time<br>
+        close_time time<br>
+        <br>
+        <span style="color:#64748b;">UNIQUE(tenant_id, day_of_week)</span>
+      </div>
+    </div>
+
+    <!-- schedule_blocks -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #f87171;">
+      <div style="color:#f87171;font-weight:bold;font-size:13px;margin-bottom:10px;">schedule_blocks</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#fb923c;">tenant_id</span> uuid FK→tenants<br>
+        start_at timestamptz<br>
+        end_at timestamptz<br>
+        reason text <span style="color:#64748b;">-- opcional</span><br>
+        created_at timestamptz
+      </div>
+      <div style="margin-top:10px;background:#1e293b;border-radius:6px;padding:8px;font-size:10px;color:#94a3b8;">Feriados, folgas, bloqueios pontuais</div>
+    </div>
+
+    <!-- índices -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #94a3b8;">
+      <div style="color:#94a3b8;font-weight:bold;font-size:13px;margin-bottom:10px;">Índices importantes</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#22c55e;">bookings</span>(tenant_id, starts_at)<br>
+        <span style="color:#22c55e;">bookings</span>(tenant_id, status)<br>
+        <span style="color:#22c55e;">customers</span>(tenant_id, phone)<br>
+        <span style="color:#22c55e;">booking_tokens</span>(token)<br>
+        <span style="color:#22c55e;">schedule_blocks</span>(tenant_id, start_at)<br>
+        <span style="color:#22c55e;">services</span>(tenant_id, is_active)<br>
+        <span style="color:#22c55e;">tenants</span>(slug)<br>
+        <span style="color:#22c55e;">tenants</span>(status)
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section">
+  <h3>Regra de isolamento</h3>
+  <div style="background:#0f172a;border-radius:8px;padding:16px;font-family:monospace;font-size:12px;color:#e2e8f0;line-height:1.8;">
+    <span style="color:#94a3b8;">-- TODA query de aplicação inclui tenant_id</span><br>
+    SELECT * FROM bookings<br>
+    WHERE <span style="color:#fbbf24;">tenant_id = $tenant_id</span> <span style="color:#64748b;">← obrigatório sempre</span><br>
+    AND starts_at >= now();<br>
+    <br>
+    <span style="color:#94a3b8;">-- RLS no Supabase como segunda camada de proteção</span><br>
+    CREATE POLICY tenant_isolation ON bookings<br>
+    USING (<span style="color:#fbbf24;">tenant_id = current_setting('app.tenant_id')::uuid</span>);
+  </div>
+</div>

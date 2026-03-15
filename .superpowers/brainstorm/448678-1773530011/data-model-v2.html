@@ -1,0 +1,175 @@
+<h2>Modelagem de Dados — v2 (com Professionals)</h2>
+<p class="subtitle">9 tabelas · professionals como cidadão de primeira classe</p>
+
+<div class="section">
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+
+    <!-- tenants -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #f59e0b;">
+      <div style="color:#f59e0b;font-weight:bold;font-size:13px;margin-bottom:10px;">tenants</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        slug text UNIQUE<br>
+        name text<br>
+        logo_url text<br>
+        primary_color text<br>
+        <span style="color:#4ade80;">monthly_price</span> numeric(10,2) <span style="color:#64748b;">← por tenant</span><br>
+        status text<br>
+        created_at timestamptz
+      </div>
+      <div style="margin-top:10px;background:#1e293b;border-radius:6px;padding:8px;font-size:10px;color:#94a3b8;">
+        monthly_price já é por tenant. MVP popula todos com mesmo valor. Futuro: edita individualmente.
+      </div>
+    </div>
+
+    <!-- professionals ← NOVO -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #34d399;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="color:#34d399;font-weight:bold;font-size:13px;">professionals</span>
+        <span style="background:#065f46;color:#34d399;font-size:10px;padding:2px 8px;border-radius:4px;">NOVO</span>
+      </div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#fb923c;">tenant_id</span> uuid FK→tenants<br>
+        name text<br>
+        bio text<br>
+        avatar_url text<br>
+        is_active boolean DEFAULT true<br>
+        sort_order int DEFAULT 0<br>
+        created_at timestamptz
+      </div>
+      <div style="margin-top:10px;background:#1e293b;border-radius:6px;padding:8px;font-size:10px;color:#94a3b8;">
+        1 criado automaticamente ao criar tenant. Admin pode adicionar mais.
+      </div>
+    </div>
+
+    <!-- services -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #ec4899;">
+      <div style="color:#ec4899;font-weight:bold;font-size:13px;margin-bottom:10px;">services</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#fb923c;">tenant_id</span> uuid FK→tenants<br>
+        name text<br>
+        description text<br>
+        price numeric(10,2)<br>
+        duration_minutes int<br>
+        buffer_minutes int DEFAULT 0<br>
+        is_active boolean DEFAULT true<br>
+        created_at timestamptz
+      </div>
+    </div>
+
+    <!-- customers -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #22c55e;">
+      <div style="color:#22c55e;font-weight:bold;font-size:13px;margin-bottom:10px;">customers</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#fb923c;">tenant_id</span> uuid FK→tenants<br>
+        name text<br>
+        phone text <span style="color:#64748b;">-- E.164</span><br>
+        created_at timestamptz<br>
+        <br>
+        <span style="color:#64748b;">UNIQUE(tenant_id, phone)</span>
+      </div>
+    </div>
+
+    <!-- bookings -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #38bdf8;">
+      <div style="color:#38bdf8;font-weight:bold;font-size:13px;margin-bottom:10px;">bookings</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#fb923c;">tenant_id</span> uuid FK→tenants<br>
+        <span style="color:#fb923c;">customer_id</span> uuid FK→customers<br>
+        <span style="color:#fb923c;">service_id</span> uuid FK→services<br>
+        <span style="color:#4ade80;">professional_id</span> uuid FK→professionals<br>
+        starts_at timestamptz<br>
+        ends_at timestamptz<br>
+        status text <span style="color:#64748b;">-- confirmed|cancelled</span><br>
+        <span style="color:#64748b;">-- rescheduled|completed</span><br>
+        notes text<br>
+        created_at timestamptz
+      </div>
+      <div style="margin-top:10px;background:#1e293b;border-radius:6px;padding:8px;font-size:10px;color:#94a3b8;">
+        professional_id obrigatório. Disponibilidade calculada por profissional.
+      </div>
+    </div>
+
+    <!-- booking_tokens -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #a78bfa;">
+      <div style="color:#a78bfa;font-weight:bold;font-size:13px;margin-bottom:10px;">booking_tokens</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#fb923c;">booking_id</span> uuid FK→bookings<br>
+        <span style="color:#fb923c;">tenant_id</span> uuid FK→tenants<br>
+        token text UNIQUE<br>
+        expires_at timestamptz<br>
+        used_at timestamptz<br>
+        revoked_at timestamptz<br>
+        created_at timestamptz
+      </div>
+    </div>
+
+    <!-- business_hours -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #fb923c;">
+      <div style="color:#fb923c;font-weight:bold;font-size:13px;margin-bottom:10px;">business_hours</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#fb923c;">tenant_id</span> uuid FK→tenants<br>
+        day_of_week int <span style="color:#64748b;">-- 0=Dom..6=Sáb</span><br>
+        is_open boolean DEFAULT true<br>
+        open_time time<br>
+        close_time time<br>
+        <br>
+        <span style="color:#64748b;">UNIQUE(tenant_id, day_of_week)</span>
+      </div>
+      <div style="margin-top:10px;background:#1e293b;border-radius:6px;padding:8px;font-size:10px;color:#94a3b8;">
+        MVP: horário compartilhado por todos os profissionais do tenant. Futuro: business_hours por profissional.
+      </div>
+    </div>
+
+    <!-- schedule_blocks -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #f87171;">
+      <div style="color:#f87171;font-weight:bold;font-size:13px;margin-bottom:10px;">schedule_blocks</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#fbbf24;">id</span> uuid PK<br>
+        <span style="color:#fb923c;">tenant_id</span> uuid FK→tenants<br>
+        <span style="color:#64748b;">professional_id</span> uuid FK→professionals<br>
+        <span style="color:#64748b;">-- NULL = bloqueia todos</span><br>
+        start_at timestamptz<br>
+        end_at timestamptz<br>
+        reason text<br>
+        created_at timestamptz
+      </div>
+      <div style="margin-top:10px;background:#1e293b;border-radius:6px;padding:8px;font-size:10px;color:#94a3b8;">
+        professional_id NULL = bloqueia o tenant inteiro (feriado). Preenchido = bloqueia 1 profissional.
+      </div>
+    </div>
+
+    <!-- índices -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-top:3px solid #94a3b8;">
+      <div style="color:#94a3b8;font-weight:bold;font-size:13px;margin-bottom:10px;">Índices</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.9;color:#cbd5e1;">
+        <span style="color:#22c55e;">bookings</span>(tenant_id, starts_at)<br>
+        <span style="color:#22c55e;">bookings</span>(tenant_id, professional_id, starts_at)<br>
+        <span style="color:#22c55e;">bookings</span>(tenant_id, status)<br>
+        <span style="color:#22c55e;">customers</span>(tenant_id, phone)<br>
+        <span style="color:#22c55e;">booking_tokens</span>(token)<br>
+        <span style="color:#22c55e;">professionals</span>(tenant_id, is_active)<br>
+        <span style="color:#22c55e;">schedule_blocks</span>(tenant_id, start_at)<br>
+        <span style="color:#22c55e;">tenants</span>(slug, status)
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section">
+  <h3>Fluxo de criação de tenant</h3>
+  <div style="background:#0f172a;border-radius:8px;padding:16px;font-family:monospace;font-size:12px;color:#e2e8f0;line-height:2;">
+    <span style="color:#94a3b8;">1.</span> INSERT INTO tenants → id<br>
+    <span style="color:#94a3b8;">2.</span> INSERT INTO professionals <span style="color:#fbbf24;">(name = nome do tenant, is_active = true)</span> → default professional<br>
+    <span style="color:#94a3b8;">3.</span> INSERT INTO business_hours <span style="color:#fbbf24;">(seg-sex, 09:00–18:00)</span> → grade padrão<br>
+    <span style="color:#94a3b8;">4.</span> Supabase Auth: create user → INSERT INTO tenant_users<br>
+    <span style="color:#94a3b8;">5.</span> Tenant pronto para usar
+  </div>
+</div>

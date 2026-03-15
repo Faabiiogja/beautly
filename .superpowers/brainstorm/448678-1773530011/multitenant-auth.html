@@ -1,0 +1,163 @@
+<h2>Multi-tenant · Autenticação · Segurança</h2>
+<p class="subtitle">Seções 3 e 4 — estratégia completa</p>
+
+<div class="section">
+  <h3>🏗️ Estratégia Multi-tenant por Subdomínio</h3>
+  <div style="background:#0f172a;border-radius:10px;padding:20px;font-family:monospace;font-size:12px;color:#e2e8f0;line-height:2;">
+    <span style="color:#94a3b8;">// middleware.ts — roda no Edge (zero cold start)</span><br><br>
+
+    <span style="color:#38bdf8;">export function</span> <span style="color:#fbbf24;">middleware</span>(req: NextRequest) {<br>
+    &nbsp;&nbsp;<span style="color:#38bdf8;">const</span> host = req.headers.get(<span style="color:#22c55e;">'host'</span>) ?? <span style="color:#22c55e;">''</span><br><br>
+
+    &nbsp;&nbsp;<span style="color:#94a3b8;">// 1. Super Admin</span><br>
+    &nbsp;&nbsp;<span style="color:#38bdf8;">if</span> (host === <span style="color:#22c55e;">'admin.beautly.com'</span>) {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#38bdf8;">return</span> handleSuperAdmin(req)<br>
+    &nbsp;&nbsp;}<br><br>
+
+    &nbsp;&nbsp;<span style="color:#94a3b8;">// 2. Dev local — usa tenant do .env</span><br>
+    &nbsp;&nbsp;<span style="color:#38bdf8;">if</span> (host.includes(<span style="color:#22c55e;">'localhost'</span>) || host.includes(<span style="color:#22c55e;">'127.0.0.1'</span>)) {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;slug = process.env.DEV_TENANT_SLUG ?? <span style="color:#22c55e;">'demo'</span><br>
+    &nbsp;&nbsp;}<br><br>
+
+    &nbsp;&nbsp;<span style="color:#94a3b8;">// 3. Preview Vercel (*.vercel.app) — usa tenant do .env</span><br>
+    &nbsp;&nbsp;<span style="color:#38bdf8;">else if</span> (host.includes(<span style="color:#22c55e;">'vercel.app'</span>)) {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;slug = process.env.PREVIEW_TENANT_SLUG ?? <span style="color:#22c55e;">'demo'</span><br>
+    &nbsp;&nbsp;}<br><br>
+
+    &nbsp;&nbsp;<span style="color:#94a3b8;">// 4. Produção — extrai slug do subdomínio</span><br>
+    &nbsp;&nbsp;<span style="color:#38bdf8;">else</span> {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;slug = host.split(<span style="color:#22c55e;">'.'</span>)[0] <span style="color:#94a3b8;">// "clinica" de "clinica.beautly.com"</span><br>
+    &nbsp;&nbsp;}<br><br>
+
+    &nbsp;&nbsp;<span style="color:#94a3b8;">// Injeta slug no header — Server Components leem com headers()</span><br>
+    &nbsp;&nbsp;<span style="color:#38bdf8;">const</span> res = NextResponse.next()<br>
+    &nbsp;&nbsp;res.headers.set(<span style="color:#22c55e;">'x-tenant-slug'</span>, slug)<br>
+    &nbsp;&nbsp;<span style="color:#38bdf8;">return</span> res<br>
+    }
+  </div>
+  <div style="margin-top:12px;background:#1e293b;border-radius:8px;padding:14px;font-size:12px;color:#94a3b8;">
+    ⚠️ O middleware <strong style="color:#f8fafc;">não consulta o banco</strong> — só repassa o slug. A resolução real (slug → tenant) acontece uma vez no layout raiz com cache. Isso mantém o Edge ultra-rápido.
+  </div>
+</div>
+
+<div class="section">
+  <h3>🔒 Autenticação — 3 contextos</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-left:3px solid #f59e0b;">
+      <div style="color:#f59e0b;font-weight:bold;margin-bottom:10px;">👑 Super Admin (você)</div>
+      <div style="font-size:12px;color:#cbd5e1;line-height:1.8;">
+        Credencial única em <code style="color:#38bdf8;">.env</code><br>
+        <code>SUPER_ADMIN_EMAIL</code><br>
+        <code>SUPER_ADMIN_PASSWORD_HASH</code><br><br>
+        Login via <code>/api/auth/super</code><br>
+        Gera JWT com claim <code>role: "super"</code><br>
+        Cookie httpOnly + secure<br>
+        Sem Supabase Auth
+      </div>
+      <div style="margin-top:10px;background:#1e293b;border-radius:6px;padding:8px;font-size:11px;color:#94a3b8;">
+        Simples e suficiente para 1 usuário. Quando precisar de equipe, migra para Supabase.
+      </div>
+    </div>
+
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-left:3px solid #6366f1;">
+      <div style="color:#6366f1;font-weight:bold;margin-bottom:10px;">🔑 Tenant Admin</div>
+      <div style="font-size:12px;color:#cbd5e1;line-height:1.8;">
+        Supabase Auth<br>
+        Email + senha<br><br>
+        Login: <code>supabase.auth.signInWithPassword()</code><br>
+        Sessão via cookie Supabase<br>
+        Middleware valida sessão<br>
+        Verifica <code>tenant_users.tenant_id</code><br>
+        redireciona se não autorizado
+      </div>
+      <div style="margin-top:10px;background:#1e293b;border-radius:6px;padding:8px;font-size:11px;color:#94a3b8;">
+        Tenant A não acessa painel do Tenant B — validado no middleware + RLS.
+      </div>
+    </div>
+
+    <div style="background:#0f172a;border-radius:10px;padding:16px;border-left:3px solid #ec4899;">
+      <div style="color:#ec4899;font-weight:bold;margin-bottom:10px;">🌸 Cliente Final</div>
+      <div style="font-size:12px;color:#cbd5e1;line-height:1.8;">
+        Sem autenticação tradicional<br><br>
+        Acesso via <strong>token único</strong> na URL:<br>
+        <code style="color:#fbbf24;">/b/[token]</code><br><br>
+        Token → booking_tokens<br>
+        Verifica: existe? expirou? revogado?<br>
+        Cookie opcional para UX<br>
+        (lembra o token no mesmo dispositivo)
+      </div>
+      <div style="margin-top:10px;background:#1e293b;border-radius:6px;padding:8px;font-size:11px;color:#94a3b8;">
+        Nunca expõe phone na URL. Nunca permite login só por telefone.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>🔗 Link Seguro do Cliente — ciclo completo</h3>
+  <div style="background:#0f172a;border-radius:10px;padding:20px;font-size:12px;line-height:2;">
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 16px;align-items:start;">
+      <span style="color:#fbbf24;font-family:monospace;">1. Geração</span>
+      <span style="color:#cbd5e1;">token = <code style="color:#22c55e;">crypto.randomBytes(32).toString('hex')</code> (64 chars, 256 bits de entropia)<br>expires_at = now() + 7 dias<br>INSERT booking_tokens</span>
+
+      <span style="color:#fbbf24;font-family:monospace;">2. URL</span>
+      <span style="color:#cbd5e1;"><code>https://clinica.beautly.com/b/a3f9c2...d8e1</code><br>Token nunca contém booking_id, nome ou telefone</span>
+
+      <span style="color:#fbbf24;font-family:monospace;">3. WhatsApp</span>
+      <span style="color:#cbd5e1;">Meta Cloud API envia template aprovado com o link<br>"Seu agendamento está confirmado! Acesse: [link]"</span>
+
+      <span style="color:#fbbf24;font-family:monospace;">4. Validação</span>
+      <span style="color:#cbd5e1;">SELECT * FROM booking_tokens WHERE token = $1<br>AND expires_at > now() AND revoked_at IS NULL<br>→ retorna booking completo via JOIN</span>
+
+      <span style="color:#fbbf24;font-family:monospace;">5. Ação</span>
+      <span style="color:#cbd5e1;">Cancelamento: booking.status = 'cancelled' + token.revoked_at = now()<br>Reagendamento: novo booking + novo token + revoga token anterior</span>
+
+      <span style="color:#fbbf24;font-family:monospace;">6. Cookie</span>
+      <span style="color:#cbd5e1;">httpOnly cookie com o token (7 dias)<br>Na próxima visita no mesmo dispositivo: redireciona direto para /b/[token]</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>🛡️ Segurança mínima para produção</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div style="background:#0f172a;border-radius:10px;padding:16px;">
+      <div style="color:#22c55e;font-weight:bold;margin-bottom:10px;">✅ Implementar no MVP</div>
+      <div style="font-size:12px;color:#cbd5e1;line-height:2;">
+        • RLS no Supabase em todas as tabelas<br>
+        • tenant_id em toda query de aplicação<br>
+        • HTTPS obrigatório (Vercel cuida)<br>
+        • Cookies httpOnly + secure + sameSite=lax<br>
+        • Token de 256 bits (inviável brute force)<br>
+        • Rate limit em <code>/api/bookings</code> (ex: 10 req/min por IP)<br>
+        • Validar/sanitizar inputs com Zod<br>
+        • Headers de segurança via next.config.js<br>
+        • Variáveis sensíveis só no .env (nunca no código)
+      </div>
+    </div>
+    <div style="background:#0f172a;border-radius:10px;padding:16px;">
+      <div style="color:#94a3b8;font-weight:bold;margin-bottom:10px;">⏳ Depois do MVP</div>
+      <div style="font-size:12px;color:#94a3b8;line-height:2;">
+        • OTP por WhatsApp/SMS<br>
+        • 2FA para admin<br>
+        • Audit log de ações admin<br>
+        • WAF (Cloudflare)<br>
+        • Monitoramento de anomalias<br>
+        • LGPD: consentimento e exclusão de dados<br>
+        • Webhook signatures para Meta API
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Anti-enumeração de telefone</h3>
+  <div style="background:#0f172a;border-radius:8px;padding:16px;font-size:12px;color:#cbd5e1;line-height:1.9;">
+    O fluxo de agendamento <strong>nunca pergunta telefone para consultar agendamento</strong>.<br>
+    O cliente acessa <strong>apenas pelo link</strong> que recebeu no WhatsApp.<br>
+    Não existe endpoint público <code>GET /bookings?phone=xxx</code>.<br>
+    O campo phone é <strong>nunca retornado em responses públicas</strong> — só usado internamente para upsert de customer.<br>
+    Rate limit de 5 tentativas/min em qualquer endpoint que aceite phone como input.
+  </div>
+</div>

@@ -1,0 +1,111 @@
+<h2>Arquitetura Geral — Beautly MVP (v2)</h2>
+<p class="subtitle">3 contextos distintos · 1 aplicação · 1 deploy</p>
+
+<div class="section">
+  <div style="background:#0f172a;border-radius:12px;padding:28px;font-family:monospace;font-size:13px;line-height:1.8;color:#e2e8f0;">
+
+    <div style="color:#94a3b8;margin-bottom:16px;">── 3 Contextos de Acesso ──────────────────────────────</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:28px;">
+
+      <div style="background:#1e293b;border-radius:10px;padding:16px;border-top:3px solid #f59e0b;">
+        <div style="color:#f59e0b;font-weight:bold;font-size:14px;margin-bottom:6px;">👑 Beautly Super Admin</div>
+        <div style="color:#38bdf8;font-size:12px;margin-bottom:8px;">admin.beautly.com</div>
+        <div style="color:#94a3b8;font-size:11px;line-height:1.6;">
+          • lista de tenants<br>
+          • quantos clientes ativos<br>
+          • MRR (tenants × preço)<br>
+          • ativar / desativar tenant<br>
+          • criar novo tenant
+        </div>
+        <div style="margin-top:10px;background:#0f172a;border-radius:6px;padding:8px;font-size:11px;">
+          <span style="color:#fbbf24;">auth:</span> <span style="color:#f8fafc;">email+senha exclusivo<br>hardcoded no .env</span>
+        </div>
+      </div>
+
+      <div style="background:#1e293b;border-radius:10px;padding:16px;border-top:3px solid #6366f1;">
+        <div style="color:#6366f1;font-weight:bold;font-size:14px;margin-bottom:6px;">🔒 Tenant Admin</div>
+        <div style="color:#38bdf8;font-size:12px;margin-bottom:8px;">nome.beautly.com/admin</div>
+        <div style="color:#94a3b8;font-size:11px;line-height:1.6;">
+          • agenda do dia<br>
+          • serviços e preços<br>
+          • horários de funcionamento<br>
+          • bloqueios de agenda<br>
+          • configurações da estética
+        </div>
+        <div style="margin-top:10px;background:#0f172a;border-radius:6px;padding:8px;font-size:11px;">
+          <span style="color:#fbbf24;">auth:</span> <span style="color:#f8fafc;">Supabase Auth<br>email+senha por tenant</span>
+        </div>
+      </div>
+
+      <div style="background:#1e293b;border-radius:10px;padding:16px;border-top:3px solid #ec4899;">
+        <div style="color:#ec4899;font-weight:bold;font-size:14px;margin-bottom:6px;">🌸 Área Pública (Booking)</div>
+        <div style="color:#38bdf8;font-size:12px;margin-bottom:8px;">nome.beautly.com</div>
+        <div style="color:#94a3b8;font-size:11px;line-height:1.6;">
+          • página da estética<br>
+          • seleção de serviço<br>
+          • calendário de horários<br>
+          • dados do cliente<br>
+          • confirmação + link único<br>
+          • cancelar / reagendar
+        </div>
+        <div style="margin-top:10px;background:#0f172a;border-radius:6px;padding:8px;font-size:11px;">
+          <span style="color:#fbbf24;">auth:</span> <span style="color:#f8fafc;">nenhuma — acesso<br>por token seguro</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="color:#94a3b8;margin-bottom:16px;">── Roteamento pelo Middleware ────────────────────────</div>
+
+    <div style="background:#1e293b;border-radius:8px;padding:16px;margin-bottom:24px;font-size:12px;line-height:1.9;">
+      <span style="color:#fbbf24;">host === "admin.beautly.com"</span>
+      <span style="color:#64748b;"> → </span>
+      <span style="color:#f59e0b;">Super Admin context</span><br>
+
+      <span style="color:#fbbf24;">host === "*.beautly.com" + path starts with "/admin"</span>
+      <span style="color:#64748b;"> → </span>
+      <span style="color:#6366f1;">Tenant Admin context</span><br>
+
+      <span style="color:#fbbf24;">host === "*.beautly.com" + demais paths</span>
+      <span style="color:#64748b;"> → </span>
+      <span style="color:#ec4899;">Booking público</span><br>
+
+      <span style="color:#fbbf24;">host === "localhost" / preview</span>
+      <span style="color:#64748b;"> → </span>
+      <span style="color:#22c55e;">tenant de dev do .env</span>
+    </div>
+
+    <div style="color:#94a3b8;margin-bottom:16px;">── Infraestrutura ────────────────────────────────────</div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div style="background:#1e293b;border-radius:8px;padding:10px 14px;border:1px solid #334155;font-size:12px;">
+        <span style="color:#22c55e;">▲</span> <span style="color:#f8fafc;">Vercel</span>
+        <div style="color:#94a3b8;font-size:11px;">wildcard *.beautly.com</div>
+      </div>
+      <div style="background:#1e293b;border-radius:8px;padding:10px 14px;border:1px solid #334155;font-size:12px;">
+        <span style="color:#22c55e;">⚡</span> <span style="color:#f8fafc;">Supabase</span>
+        <div style="color:#94a3b8;font-size:11px;">PostgreSQL + Auth + Storage</div>
+      </div>
+      <div style="background:#1e293b;border-radius:8px;padding:10px 14px;border:1px solid #334155;font-size:12px;">
+        <span style="color:#22c55e;">💬</span> <span style="color:#f8fafc;">Meta Cloud API</span>
+        <div style="color:#94a3b8;font-size:11px;">WhatsApp confirmações</div>
+      </div>
+      <div style="background:#1e293b;border-radius:8px;padding:10px 14px;border:1px solid #334155;font-size:12px;">
+        <span style="color:#22c55e;">🔑</span> <span style="color:#f8fafc;">Supabase Auth</span>
+        <div style="color:#94a3b8;font-size:11px;">auth de tenants</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>MRR no Super Admin — como calcular</h3>
+  <div style="background:#0f172a;border-radius:8px;padding:16px;font-family:monospace;font-size:12px;color:#e2e8f0;">
+    <span style="color:#94a3b8;">-- simples e direto para MVP</span><br>
+    SELECT COUNT(*) as total_tenants,<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; COUNT(*) * <span style="color:#fbbf24;">:monthly_price</span> as mrr<br>
+    FROM tenants<br>
+    WHERE status = <span style="color:#22c55e;">'active'</span>;
+  </div>
+  <div style="color:#94a3b8;font-size:12px;margin-top:10px;">O preço mensal vive no <code>.env</code> no MVP. Quando houver planos, migra para tabela.</div>
+</div>
