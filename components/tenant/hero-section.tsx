@@ -1,4 +1,5 @@
 // components/tenant/hero-section.tsx
+import { Star } from 'lucide-react'
 
 type Props = {
   name: string
@@ -6,43 +7,52 @@ type Props = {
 }
 
 export function HeroSection({ name, logoUrl }: Props) {
-  const safeLogo = logoUrl?.startsWith('https://') ? logoUrl : null
+  const safeLogo = logoUrl?.startsWith('https://')
+    ? logoUrl
+    : 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2000&auto=format&fit=crop'
 
   return (
-    <section className="relative min-h-[60vh] flex flex-col justify-end md:flex-row md:items-center overflow-hidden bg-[#0a0a0a]">
-      {/* Background: image or gradient */}
-      {safeLogo ? (
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${safeLogo})` }}
-          aria-hidden="true"
-        />
-      ) : (
-        <div
-          className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#1a0a14] to-[#ec4899]/30"
-          aria-hidden="true"
-        />
-      )}
+    <section className="max-w-[1440px] mx-auto px-6 lg:px-20 py-12 lg:py-24">
+      <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="flex flex-col gap-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ec4899]/10 border border-[#ec4899]/20 w-fit">
+            <Star className="w-4 h-4 text-[#ec4899]" />
+            <span className="text-[#ec4899] text-xs font-bold uppercase tracking-wider">
+              Seu salão de beleza
+            </span>
+          </div>
 
-      {/* Overlay for text legibility */}
-      <div className="absolute inset-0 bg-black/50" aria-hidden="true" />
+          <div className="flex flex-col gap-4">
+            <h1 className="text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight text-slate-900 dark:text-white">
+              {name}
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 text-lg lg:text-xl max-w-lg leading-relaxed">
+              Agende seu horário com facilidade e experimente o melhor em cuidados de beleza com nossos especialistas.
+            </p>
+          </div>
 
-      {/* Content */}
-      <div className="relative z-10 px-6 pb-12 pt-24 md:w-1/2 md:px-12 md:py-20">
-        <p className="mb-2 text-xs font-medium uppercase tracking-widest text-[#ec4899]">
-          Seu salão de beleza
-        </p>
-        <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">{name}</h1>
-        <p className="mb-8 text-base text-white/70">
-          Agende seu horário com facilidade
-        </p>
-        <button
-          type="button"
-          title="Em breve"
-          className="rounded-xl bg-[#ec4899] px-8 py-4 text-sm font-bold text-white transition-opacity hover:opacity-90"
-        >
-          Agendar agora
-        </button>
+          <div className="flex flex-col sm:flex-row gap-4 pt-2">
+            <button className="bg-[#ec4899] hover:bg-[#ec4899]/90 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all shadow-xl shadow-[#ec4899]/20">
+              Agendar agora
+            </button>
+            <a href="#servicos" className="flex items-center justify-center bg-transparent border border-slate-300 dark:border-white/10 text-slate-700 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 px-10 py-4 rounded-xl font-bold text-lg transition-all">
+              Ver serviços
+            </a>
+          </div>
+
+        </div>
+
+        <div className="relative group mt-8 lg:mt-0">
+          <div className="absolute -inset-4 bg-[#ec4899]/20 rounded-3xl blur-2xl transition-all group-hover:bg-[#ec4899]/30"></div>
+          <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-slate-100 dark:bg-[#1a1a1a]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={safeLogo!}
+              alt="Interior do salão"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
       </div>
     </section>
   )
