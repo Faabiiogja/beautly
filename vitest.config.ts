@@ -13,7 +13,11 @@ export default defineConfig({
       {
         extends: true,
         test: {
-          include: ['__tests__/super-admin/**/*.test.ts'],
+          include: [
+            '__tests__/super-admin/**/*.test.ts',
+            '__tests__/lib/**/*.test.ts',
+            '__tests__/booking/**/*.test.ts',
+          ],
           environment: 'node',
         },
       },
@@ -21,7 +25,12 @@ export default defineConfig({
         extends: true,
         test: {
           include: ['__tests__/**/*.test.{ts,tsx}', '**/*.test.{ts,tsx}'],
-          exclude: ['__tests__/super-admin/**', 'node_modules/**'],
+          exclude: [
+            '__tests__/super-admin/**',
+            '__tests__/lib/**',
+            '__tests__/booking/**',
+            'node_modules/**',
+          ],
           environment: 'jsdom',
         },
       },
