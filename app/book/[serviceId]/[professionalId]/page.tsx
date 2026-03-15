@@ -106,6 +106,7 @@ export default async function ProfessionalSchedulePage({ params }: PageProps) {
             professionalId={professionalId}
             timezone={tenant.timezone}
             primary={primary}
+            backPath={`/book/${serviceId}/${professionalId}`}
           />
         </div>
       </section>

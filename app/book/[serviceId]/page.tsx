@@ -115,6 +115,7 @@ export default async function ServicePage({ params }: PageProps) {
               professionalId={activeProfessionals[0].id}
               timezone={tenant.timezone}
               primary={primary}
+              backPath={`/book/${serviceId}`}
             />
           </div>
         )}

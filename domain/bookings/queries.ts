@@ -1,3 +1,4 @@
+import { fromZonedTime } from 'date-fns-tz'
 import { createSupabaseServiceClient } from '@/lib/supabase/server'
 import type { BookingWithDetails } from '@/domain/bookings/types'
 
@@ -49,11 +50,12 @@ export async function getBookingById(
 
 export async function getBookingsByDate(
   tenantId: string,
-  date: string
+  date: string,
+  timezone: string
 ): Promise<BookingWithDetails[]> {
   const supabase = createSupabaseServiceClient()
-  const dayStart = `${date}T00:00:00.000Z`
-  const dayEnd = `${date}T23:59:59.999Z`
+  const dayStart = fromZonedTime(`${date}T00:00:00`, timezone).toISOString()
+  const dayEnd = fromZonedTime(`${date}T23:59:59.999`, timezone).toISOString()
   const { data } = await supabase
     .from('bookings')
     .select(BOOKING_WITH_DETAILS_SELECT)

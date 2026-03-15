@@ -13,6 +13,7 @@ interface AvailabilityPickerProps {
   professionalId: string
   timezone: string
   primary: string
+  backPath: string
 }
 
 function formatSlotLabel(utc: string, timezone: string): string {
@@ -63,6 +64,7 @@ export function AvailabilityPicker({
   professionalId,
   timezone,
   primary,
+  backPath,
 }: AvailabilityPickerProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -114,7 +116,7 @@ export function AvailabilityPicker({
     setSelectedSlot(slot)
     startTransition(() => {
       router.push(
-        `/book/confirm?serviceId=${serviceId}&professionalId=${professionalId}&slot=${encodeURIComponent(slot.utc)}`
+        `/book/confirm?serviceId=${serviceId}&professionalId=${professionalId}&slot=${encodeURIComponent(slot.utc)}&backUrl=${encodeURIComponent(backPath)}`
       )
     })
   }

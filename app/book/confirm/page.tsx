@@ -7,11 +7,11 @@ import { ConfirmForm } from './_components/confirm-form'
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
-  searchParams: Promise<{ serviceId?: string; professionalId?: string; slot?: string }>
+  searchParams: Promise<{ serviceId?: string; professionalId?: string; slot?: string; backUrl?: string }>
 }
 
 export default async function ConfirmPage({ searchParams }: PageProps) {
-  const { serviceId, professionalId, slot } = await searchParams
+  const { serviceId, professionalId, slot, backUrl } = await searchParams
 
   if (!serviceId || !professionalId || !slot) {
     notFound()
@@ -59,14 +59,14 @@ export default async function ConfirmPage({ searchParams }: PageProps) {
 
   const primary = tenant.primary_color ?? '#ec4899'
 
-  const backUrl = `/book/${serviceId}/${professionalId}`
+  const resolvedBackUrl = backUrl ?? `/book/${serviceId}/${professionalId}`
 
   return (
     <main className="min-h-screen bg-stone-50">
       <header className="border-b border-stone-200 bg-white">
         <div className="mx-auto flex max-w-3xl items-center gap-4 px-6 py-5">
           <Link
-            href={backUrl}
+            href={resolvedBackUrl}
             className="text-2xl leading-none text-stone-500 transition-colors hover:text-stone-900"
           >
             ←

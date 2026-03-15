@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { createSupabaseServiceClient } from '@/lib/supabase/server'
 import { getCurrentTenant } from '@/lib/tenant'
 import { getBookingById } from '@/domain/bookings/queries'
 
@@ -19,6 +20,25 @@ export default async function BookingDonePage({ searchParams }: PageProps) {
   }
 
   const booking = bookingId ? await getBookingById(bookingId, tenant.id) : null
+
+  let devBookingUrl: string | null = null
+  if (process.env.NODE_ENV === 'development' && bookingId) {
+    const supabase = createSupabaseServiceClient()
+    const { data: tokenRow } = await supabase
+      .from('booking_tokens')
+      .select('token')
+      .eq('booking_id', bookingId)
+      .is('revoked_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+    if (tokenRow) {
+      const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN
+      devBookingUrl = appDomain
+        ? `https://${tenant.slug}.${appDomain}/b/${tokenRow.token}`
+        : `http://localhost:3000/b/${tokenRow.token}`
+    }
+  }
 
   const slotLabel = booking
     ? new Intl.DateTimeFormat('pt-BR', {
@@ -102,9 +122,10 @@ export default async function BookingDonePage({ searchParams }: PageProps) {
         ) : null}
 
         {/* Dev-only hint */}
-        {process.env.NODE_ENV === 'development' ? (
-          <div className="w-full rounded-xl bg-yellow-50 border border-yellow-200 px-4 py-3 text-xs text-yellow-800">
-            DEV: Para testar, você precisará buscar o token em booking_tokens no Supabase Studio (localhost:54323).
+        {process.env.NODE_ENV === 'development' && devBookingUrl ? (
+          <div className="w-full rounded-xl bg-yellow-50 border border-yellow-200 px-4 py-3 text-xs text-yellow-800 space-y-1">
+            <p className="font-semibold">DEV: link do agendamento</p>
+            <a href={devBookingUrl} className="break-all underline">{devBookingUrl}</a>
           </div>
         ) : null}
 

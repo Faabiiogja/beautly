@@ -26,24 +26,3 @@ export async function createBookingToken(
   return token
 }
 
-export async function validateBookingToken(token: string) {
-  const supabase = createSupabaseServiceClient()
-  const { data } = await supabase
-    .from('booking_tokens')
-    .select(`
-      *,
-      booking:bookings(
-        id, status, starts_at, ends_at, notes,
-        service:services(id, name, duration_minutes, price),
-        professional:professionals(id, name),
-        customer:customers(id, name),
-        tenant:tenants(id, name, primary_color)
-      )
-    `)
-    .eq('token', token)
-    .is('revoked_at', null)
-    .gt('expires_at', new Date().toISOString())
-    .single()
-
-  return data ?? null
-}

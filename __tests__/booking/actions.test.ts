@@ -12,6 +12,7 @@ const mockSingle = vi.fn()
 const mockEq = vi.fn()
 const mockSelect = vi.fn()
 const mockInsert = vi.fn()
+const mockUpsert = vi.fn()
 const mockFrom = vi.fn()
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -54,7 +55,10 @@ beforeEach(() => {
 
   mockEq.mockReturnValue({ eq: mockEq, single: mockSingle })
   mockSelect.mockReturnValue({ eq: mockEq })
-  mockInsert.mockReturnValue({ select: mockSelect })
+  const mockInsertSelect = vi.fn().mockReturnValue({ single: mockSingle })
+  mockInsert.mockReturnValue({ select: mockInsertSelect })
+  const mockUpsertSelect = vi.fn().mockReturnValue({ single: mockSingle })
+  mockUpsert.mockReturnValue({ select: mockUpsertSelect })
   mockFrom.mockImplementation((table: string) => {
     if (table === 'services') {
       mockSingle.mockResolvedValueOnce({
@@ -92,7 +96,7 @@ beforeEach(() => {
       })
     }
 
-    return { select: mockSelect, insert: mockInsert }
+    return { select: mockSelect, insert: mockInsert, upsert: mockUpsert }
   })
 })
 
@@ -138,6 +142,34 @@ describe('confirmBookingLogic', () => {
       ...validInput,
       slot: '2026-03-18T09:00:00',
     })
+
+    expect(result.error).toBe('validation_error')
+  })
+
+  it('retorna success com bookingId quando todos os dados sao validos', async () => {
+    const result = await confirmBookingLogic(validInput)
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.bookingId).toBe('44444444-4444-4444-8444-444444444444')
+    }
+  })
+
+  it('retorna validation_error quando servico nao existe (tenant isolation)', async () => {
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'services') {
+        mockSingle.mockResolvedValueOnce({ data: null, error: null })
+      }
+      if (table === 'professionals') {
+        mockSingle.mockResolvedValueOnce({
+          data: { id: '22222222-2222-4222-8222-222222222222', name: 'Bia' },
+          error: null,
+        })
+      }
+      return { select: mockSelect, insert: mockInsert, upsert: mockUpsert }
+    })
+
+    const result = await confirmBookingLogic(validInput)
 
     expect(result.error).toBe('validation_error')
   })
