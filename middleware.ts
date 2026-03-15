@@ -22,32 +22,8 @@ export async function middleware(req: NextRequest) {
     return res
   }
 
-  // Contexto tenant — refresh da sessão Supabase Auth obrigatório
-  // @supabase/ssr requer getUser() no middleware para manter tokens válidos
-  let res = NextResponse.next({ request: req })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return req.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value))
-          res = NextResponse.next({ request: req })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            res.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
-
-  // Necessário para refresh do JWT — não remover
-  await supabase.auth.getUser()
-
+  // Contexto tenant — resolve slug antes do supabase para que o setAll
+  // já use os request headers corretos quando precisar atualizar cookies.
   const devFallback = process.env.DEV_TENANT_SLUG ?? 'demo'
   const previewFallback = process.env.PREVIEW_TENANT_SLUG ?? 'demo'
 
@@ -60,7 +36,44 @@ export async function middleware(req: NextRequest) {
 
   const slug = extractTenantSlug(host, fallback)
 
+  // Injeta x-tenant-slug nos request headers para que Server Components
+  // possam lê-lo via headers(). Setar apenas no response NÃO funciona.
+  const requestHeaders = new Headers(req.headers)
   if (slug) {
+    requestHeaders.set('x-tenant-slug', slug)
+    requestHeaders.set('x-context', 'tenant')
+  }
+
+  // Cria a resposta inicial já com os request headers corretos.
+  // O setAll do supabase também recria res com requestHeaders — slug já incluso.
+  let res = NextResponse.next({ request: { headers: requestHeaders } })
+
+  // @supabase/ssr requer getUser() no middleware para manter tokens válidos
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return req.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value))
+          // Usa requestHeaders (já com x-tenant-slug) para não perder o contexto
+          res = NextResponse.next({ request: { headers: requestHeaders } })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            res.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  // Necessário para refresh do JWT — não remover
+  await supabase.auth.getUser()
+
+  if (slug) {
+    // Também expõe no response header (útil para debugging)
     res.headers.set('x-tenant-slug', slug)
     res.headers.set('x-context', 'tenant')
   }
