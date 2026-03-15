@@ -11,9 +11,6 @@ export function ServicesSection({ services }: Props) {
     <section className="px-6 py-10 md:px-12">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-lg font-bold text-white">Nossos Serviços</h2>
-        {services.length > 0 && (
-          <span className="text-xs text-[#ec4899] cursor-default">Ver todos</span>
-        )}
       </div>
 
       {services.length === 0 ? (

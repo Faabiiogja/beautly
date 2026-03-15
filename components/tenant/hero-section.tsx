@@ -12,7 +12,7 @@ export function HeroSection({ name, logoUrl }: Props) {
       {logoUrl ? (
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${logoUrl})` }}
+          style={{ backgroundImage: `url(${encodeURI(logoUrl)})` }}
           aria-hidden="true"
         />
       ) : (
