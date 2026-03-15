@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (tenantError || !tenant) {
-    return NextResponse.json({ error: 'Erro ao criar tenant' }, { status: 500 })
+    return NextResponse.json({ error: tenantError?.message ?? 'Erro ao criar tenant' }, { status: 500 })
   }
 
   const { error: profError } = await supabase
