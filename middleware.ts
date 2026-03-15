@@ -1,8 +1,9 @@
 // middleware.ts
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 import { extractTenantSlug } from '@/lib/tenant'
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const host = req.headers.get('host') ?? ''
 
   // Contexto super admin — reescreve UI para /super-admin/*
@@ -10,7 +11,6 @@ export function middleware(req: NextRequest) {
   const superAdminHosts = ['admin.beautly.com', 'beautly-admin.vercel.app']
   if (superAdminHosts.includes(host.split(':')[0])) {
     const pathname = req.nextUrl.pathname
-    // Não reescrever rotas de API — elas são acessadas diretamente
     if (!pathname.startsWith('/api/')) {
       const rewriteUrl = new URL(`/super-admin${pathname === '/' ? '' : pathname}`, req.url)
       const res = NextResponse.rewrite(rewriteUrl)
@@ -22,10 +22,35 @@ export function middleware(req: NextRequest) {
     return res
   }
 
+  // Contexto tenant — refresh da sessão Supabase Auth obrigatório
+  // @supabase/ssr requer getUser() no middleware para manter tokens válidos
+  let res = NextResponse.next({ request: req })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return req.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value))
+          res = NextResponse.next({ request: req })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            res.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  // Necessário para refresh do JWT — não remover
+  await supabase.auth.getUser()
+
   const devFallback = process.env.DEV_TENANT_SLUG ?? 'demo'
   const previewFallback = process.env.PREVIEW_TENANT_SLUG ?? 'demo'
 
-  // Determinar fallback correto para o ambiente
   const hostname = host.split(':')[0]
   const isLocal = hostname === 'localhost' || hostname === '127.0.0.1'
   const isPreview = hostname.endsWith('.vercel.app')
@@ -35,13 +60,11 @@ export function middleware(req: NextRequest) {
 
   const slug = extractTenantSlug(host, fallback)
 
-  if (!slug) {
-    return NextResponse.next()
+  if (slug) {
+    res.headers.set('x-tenant-slug', slug)
+    res.headers.set('x-context', 'tenant')
   }
 
-  const res = NextResponse.next()
-  res.headers.set('x-tenant-slug', slug)
-  res.headers.set('x-context', 'tenant')
   return res
 }
 
