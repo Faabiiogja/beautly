@@ -1,182 +1,179 @@
-export const hero = {
-  badge: 'Ideal para Clínicas e Estúdios',
-  title: 'O sistema de agendamento ideal para clínicas e estúdios de estética.',
-  highlight: 'clínicas e estúdios',
+export const navLinks = [
+  { label: 'Funcionalidades', href: '#funcionalidades' },
+  { label: 'Como funciona', href: '#como-funciona' },
+  { label: 'Depoimentos', href: '#depoimentos' },
+  { label: 'Preços', href: '#precos' },
+]
+
+export const heroContent = {
+  badge: 'Plataforma completa para estética',
+  titleStart: 'Organize seus atendimentos de estética ',
+  titleHighlight: 'sem estresse',
   description:
-    'Simplifique sua rotina, organize sua agenda e transmita mais profissionalismo com a Beautly. A plataforma completa feita para mulheres empreendedoras da beleza.',
-  primaryCta: 'Solicitar Demonstração',
-  secondaryCta: 'Ver em Ação',
-  topCta: 'Começar Agora',
-  heroImage:
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuCmx-byVsfTFxEOGnAoa7wlNJxu-5wG6DKliYezlj7YQMXhi_ZDHbVdd8Rl5yTChy3S24oebtyt4TGOU4sYGmSkNBLkJMkwzmdmN0Lmo_4ZeaTnOzeMXBooJTb2PUeg0ORi8Efo4yB1omcXmXfaXgcH9MYQBYyx7tSrjPS8bFBNo_zIFAg51xzsicbOOgjmHlO9TgCyUjpS3pFdQjdhF61d509KfFeExQeuuzo_rc8EPRilkKUp384diOrl0SbGwoQjWSM5gkP-6NE',
+    'O Beautly automatiza seus agendamentos, confirma clientes automaticamente e ajuda seu negócio de estética a crescer.',
+  primaryCta: 'Começar grátis',
+  secondaryCta: 'Ver demonstração',
+  trustBadges: ['Grátis para começar', 'Sem cartão de crédito'],
+  heroImage: 'https://www.figma.com/api/mcp/asset/10c749da-e688-4699-981e-0bb840326937',
 }
 
-export const navItems = [
-  { label: 'Funcionalidades', href: '#funcionalidades' },
-  { label: 'Benefícios', href: '#beneficios' },
-  { label: 'Como funciona', href: '#como-funciona' },
-  { label: 'FAQ', href: '#faq' },
-]
+export const painPointsContent = {
+  title: 'Chega de perder tempo com agenda no WhatsApp',
+  subtitle: 'O Beautly resolve os principais problemas que todo profissional de estética enfrenta',
+}
 
-export const painPoints = [
+export const problemCards = [
   {
-    title: 'Caos no WhatsApp',
-    description:
-      'Pare de perder horas respondendo mensagens repetitivas e perdendo agendamentos no histórico da conversa.',
-    icon: 'chat',
-  },
-  {
-    title: 'Faltas sem aviso',
-    description:
-      'Reduza o absenteísmo em até 60% com lembretes automáticos via SMS e WhatsApp para todas as suas clientes.',
-    icon: 'bell-off',
-  },
-  {
-    title: 'Agenda de Papel',
-    description:
-      'Tenha controle total do seu negócio em qualquer lugar. Sua agenda disponível 24h no seu celular ou computador.',
-    icon: 'book',
-  },
-]
-
-export const benefits = [
-  {
-    title: 'Simplificação',
-    description:
-      'Processos intuitivos que poupam seu tempo e deixam você focar no que realmente importa: suas clientes.',
-    icon: 'zap',
-  },
-  {
-    title: 'Organização',
-    description:
-      'Sua clínica funcionando como um relógio, com horários otimizados e gestão financeira integrada.',
     icon: 'calendar',
+    problem: 'Clientes esquecem horário',
+    solution: 'Beautly envia confirmação automática',
   },
   {
-    title: 'Imagem Profissional',
-    description:
-      'Página de agendamento online elegante e moderna que eleva a percepção de valor do seu trabalho.',
-    icon: 'badge',
+    icon: 'layout',
+    problem: 'Agenda bagunçada',
+    solution: 'Controle completo dos atendimentos',
+  },
+  {
+    icon: 'clock',
+    problem: 'Horários perdidos',
+    solution: 'Preenchimento automático de agenda',
+  },
+  {
+    icon: 'zap',
+    problem: 'Muito trabalho manual',
+    solution: 'Automação de agendamentos',
   },
 ]
 
-export const benefitImages = [
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuDQNtNcwXfpuPTQoJ5lqo04XJw0409zW4NRdYmu4E1LmkM_AB6i0YfbhIDNwBZ0FWwa1t6RRmDwNq2T998t-_NHlqP0IPVws4wOkcOvqA0mZok9qOyGBeVkM0n_xvqADdrfzWxwrTXRTxIIVY3HQsJ00ryK9A1un55o4l_vfwLLHLqHGdKxdh_Q1Koq4WzLVtkTAA4INJ8iO3v1fzwyKTXGYYzJ4vSs_qDtUOnifmosLSvGhV0SIFURcxjr0YA2R6mSO8876XVCxtw',
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuCW61SA5pZmCp1plX2AFtaE5nmV1aiu5zgg9zO4Ly0ubbsPXQ5_6N1IfU1WO3d2g-mte6rbVS-0smVEXi_HQBLYzexNz3GVzux0Ad5FezdhVbn_PN7nI4vK2WnTtGozfjUOJQlpyMNCPKIlwkHEDZm0BAJOTfiXCLkhzRMRRBRRsqVgAPh0jBJzvAFcv7B3IR8pKtgGWMSHvVD1ssPY2URPDuSK1x2L7AqpDCXSKubvIQdMOYMBgcsPrx2PMkKQY8rFS77VHKz4lUA',
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuDCGIDqJqqJaeveCFfmhrx7_EaGFbk9I1xzJ3cxbb7kNcIz-999svaZ-uUgN4Eq9RjQW9Zb3OuNdZGzjcyTnLnB2C16ckahpdQoVTWlQerflNAGfwBoFT9FqtyQAHQU5aa4CSIMoCySiSAVRVlxe0fnOOslo_ChN4mpvt6qr2t-pF-K-qRXQgtuvSdHhDJENyL38Fd18G8_GNrIssLmYaZrv7SgwMfBfWWvFF-XjcX37qx9c6szg4xa8A9CbjuSWcOB6JDBo5vvS0s',
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuDZoF4rHZYbCJjc70G16HI29a8byB1h-cHx3VUGd8B_wHWi9JxigUD9cPde2-XLBitdbnybEkyyCOo8Mjr2b0Fa828G9qzaXg2Y_bNFDf59bWHBRbwNo_u9g7e6oyxlXzEYvqEh6AA_3PoFWAAKlhjYljgZHwPkDYOhYKtHe-kSuziKJNZQhQyyh1qd_q2b2Imu8bd5E5IIeDQa-bZYAtt2blrAtf8hcA9RPoyGL-v7sRTY14RfOHaFp6fFvXxuaPJT-X86z9e-a4M',
-]
+export const stepsContent = {
+  title: 'Comece em minutos',
+  subtitle: 'Três passos simples para transformar seu negócio',
+  ctaBadge: '✨ Clientes já podem agendar online!',
+  ctaButton: 'Criar minha conta agora',
+}
 
 export const steps = [
   {
-    title: 'Cadastre-se',
-    description:
-      'Crie sua conta em segundos informando os dados básicos do seu negócio.',
+    number: '1',
+    icon: 'user-plus',
+    title: 'Crie sua conta',
+    description: 'Cadastre-se gratuitamente em menos de 2 minutos. Não precisa de cartão de crédito.',
   },
   {
+    number: '2',
+    icon: 'settings',
     title: 'Configure seus serviços',
-    description:
-      'Defina seus horários de atendimento, preços e a duração de cada procedimento.',
+    description: 'Adicione seus procedimentos, defina horários de atendimento e valores.',
   },
   {
+    number: '3',
+    icon: 'share-2',
     title: 'Compartilhe seu link',
-    description:
-      'Envie seu link de agendamento exclusivo para suas clientes e automatize sua agenda.',
+    description: 'Envie seu link personalizado e seus clientes já podem agendar online.',
   },
 ]
 
-export const features = [
+export const featuresContent = {
+  badge: 'Funcionalidades',
+  title: 'Tudo que você precisa em um só lugar',
+  subtitle: 'Ferramentas profissionais para gerenciar seu negócio de estética com eficiência',
+}
+
+export const featureCards = [
   {
-    title: 'Painel de Controle',
-    description: 'Visão geral financeira e de agendamentos em tempo real.',
-    icon: 'layout',
+    icon: 'calendar',
+    title: 'Agenda online automática',
+    description: 'Sistema inteligente que gerencia todos os seus horários e evita conflitos de agendamento.',
   },
   {
-    title: 'Registro de Serviços',
-    description: 'Gestão detalhada de todos os seus procedimentos e combos.',
-    icon: 'checklist',
+    icon: 'message-circle',
+    title: 'Confirmação por WhatsApp',
+    description: 'Envie lembretes automáticos para seus clientes e reduza faltas em até 70%.',
   },
   {
-    title: 'Confirmacões Automáticas',
-    description: 'Alertas automáticos para evitar faltas e atrasos.',
-    icon: 'mail',
+    icon: 'link',
+    title: 'Página de agendamento',
+    description: 'Link personalizado para seus clientes agendarem quando quiserem, 24/7.',
   },
   {
-    title: 'Base de Clientes',
-    description: 'Fichas de anamnese e histórico completo de cada cliente.',
-    icon: 'users',
+    icon: 'list-checks',
+    title: 'Controle de serviços',
+    description: 'Organize todos os seus procedimentos, valores e durações em um só lugar.',
+  },
+  {
+    icon: 'clock',
+    title: 'Gestão de horários',
+    description: 'Defina seus horários de trabalho, intervalos e bloqueios com facilidade.',
+  },
+  {
+    icon: 'layout-dashboard',
+    title: 'Painel administrativo',
+    description: 'Dashboard simples e intuitivo para acompanhar todos os seus agendamentos.',
   },
 ]
+
+export const interfaceContent = {
+  title: 'Interface moderna e intuitiva',
+  subtitle: 'Design pensado para facilitar seu dia a dia',
+  image: 'https://www.figma.com/api/mcp/asset/b7029afe-74c4-4d40-b84d-22f5b025b11d',
+}
+
+export const testimonialsContent = {
+  title: 'Profissionais de estética já estão usando',
+  subtitle: 'Veja o que nossas clientes dizem sobre o Beautly',
+}
 
 export const testimonials = [
   {
+    stars: 5,
     quote:
-      'O Beautly mudou minha vida! Antes eu perdia horas no WhatsApp, agora minhas clientes agendam sozinhas até de madrugada.',
-    author: 'Ana Clara',
-    role: 'Lash Designer',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuBHuEDTUsFsrTdCLrexjE03fKOXEHeXz7pV0PYfLzFKhGr7UW9qrpxeL9YH-k42ELFlQCehhLXkjJFONIItdx-zA2oq0hbQ5Iza3Gm7l-is85xV20gvV06V1PlhJanj9xY4-oeOd8UCPfsp0iRMtVd2lvhObtAIcE2ZEsAROYPxAoSX0GEb94Q0uCsSFNya3dynoJmrHAHzgQQrFsFrKS6OJNqYW_ffq-7s-wjOrcmvcbhdH9p_Mgot_q6MBF4mpg9OskWvKmvs-T4',
+      'Minha agenda ficou muito mais organizada depois do Beautly. Não perco mais horários e minhas clientes adoram poder agendar online!',
+    name: 'Juliana Santos',
+    role: 'Esteticista Facial',
+    initials: 'JS',
   },
   {
+    stars: 5,
     quote:
-      'Meus rendimentos aumentaram porque parei de ter buracos na agenda por conta das faltas. O sistema de confirmação é perfeito!',
-    author: 'Mariana Costa',
-    role: 'Clínica de Estética Avançada',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuAxNx23j3bxU0AcgJOCgSvZskxwByHO3X4IX5E1WNI9oVSNRktDZWe-q_drfupFyZSe6hLxDjgE_1e1kxsdYZUa1Au32bh9RS9WhD98QjhGh17IqdaOaoe8Sl9QToib65Kk3FkpwQwtTCOBTRYJW6i_l4XDUHOwE9BdSDR2rHBezVd93YJclM0EW_XaKo5-I1Xc9RmcYB44UevDHrPXQvZWmQ0CJf-m1tBt60GiSJXMu9nI-X59ycpVAt_OI2TcYF27013KoFc0oRk',
+      'O sistema de confirmação automática reduziu minhas faltas em quase 80%. Economizo horas por semana que gastava confirmando por WhatsApp.',
+    name: 'Marina Costa',
+    role: 'Proprietária - Espaço Zen',
+    initials: 'MC',
   },
   {
+    stars: 5,
     quote:
-      'Design limpo e muito fácil de usar. Minhas clientes elogiam a facilidade de agendar direto pelo link da minha bio.',
-    author: 'Beatriz Silva',
-    role: 'Studio de Micropigmentação',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuA8jqdpRPT3OPYKTKficGjLMR3k0hTiwh9s9WlWOzdgv42E0qbE6F2xehdl4GzeFCLcoNlr09iiE08Uf1NaFteTOGg6yKwde-4EKIbk0W7zqoryN02TzTnzh-4DCyzHQxZxKMJy9g8pwwTzVORbZp5wB4_Nmsk4KONWPy5EbfEGB8Ut1-7tc6Eagg4_rVBLKmhQxRKpGUNmKAqEh9ARVoqzMdMYieLenZDZG2FF8rDaI2C305yMtsKVYLt5FuiA54F2EPgTADustUo',
+      'Interface super fácil de usar. Configurei tudo sozinha em menos de 30 minutos. Recomendo para todas as minhas colegas!',
+    name: 'Carolina Mendes',
+    role: 'Designer de Sobrancelhas',
+    initials: 'CM',
   },
 ]
 
-export const audiences = [
-  { label: 'Clínicas', icon: 'briefcase-medical' },
-  { label: 'Lash Designers', icon: 'sparkles' },
-  { label: 'Cabeleireiras', icon: 'scissors' },
-  { label: 'Esteticistas', icon: 'flower' },
-  { label: 'Nail Artists', icon: 'brush' },
-]
+export const ctaContent = {
+  title: 'Pronta para organizar sua agenda?',
+  subtitle: 'Comece a usar o Beautly hoje e automatize seus agendamentos',
+  primaryCta: 'Criar minha conta',
+  secondaryCta: 'Ver demonstração',
+  trustBadges: ['14 dias grátis', 'Sem cartão de crédito', 'Cancele quando quiser'],
+}
 
-export const faqItems = [
-  {
-    question: 'O sistema é fácil de configurar?',
-    answer:
-      'Sim! O Beautly foi desenhado para ser intuitivo. Em menos de 10 minutos você consegue configurar sua conta e já começar a receber agendamentos.',
-  },
-  {
-    question: 'Minhas clientes precisam baixar algum aplicativo?',
-    answer:
-      'Não. O agendamento é feito através de um link web otimizado para celulares. Basta clicar e agendar, sem necessidade de downloads.',
-  },
-  {
-    question: 'Como funcionam os lembretes por WhatsApp?',
-    answer:
-      'O sistema envia automaticamente uma mensagem personalizada para a sua cliente 24h e 1h antes do horário marcado, confirmando a presença.',
-  },
-  {
-    question: 'Posso controlar mais de um profissional?',
-    answer:
-      'Com certeza! Temos planos específicos para clínicas com múltiplas salas e profissionais, cada um com sua agenda individual.',
-  },
-]
+export const footerContent = {
+  description: 'Sistema de agendamento online para profissionais de estética',
+  copyright: '© 2026 Beautly. Todos os direitos reservados.',
+}
 
 export const footerColumns = [
   {
     title: 'Produto',
-    links: ['Funcionalidades', 'Preços', 'Agendamento Online'],
+    links: ['Funcionalidades', 'Preços', 'Demonstração', 'Atualizações'],
+  },
+  {
+    title: 'Empresa',
+    links: ['Sobre nós', 'Blog', 'Carreiras', 'Contato'],
   },
   {
     title: 'Suporte',
-    links: ['Central de Ajuda', 'Contato', 'Comunidade'],
-  },
-  {
-    title: 'Legal',
-    links: ['Privacidade', 'Termos de Uso'],
+    links: ['Central de Ajuda', 'Documentação', 'Termos de Uso', 'Privacidade'],
   },
 ]
