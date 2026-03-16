@@ -55,7 +55,7 @@ export default function SuperAdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
       {/* Left panel — purple gradient */}
       <div
         className="hidden lg:flex lg:w-1/2 relative flex-col overflow-hidden"
