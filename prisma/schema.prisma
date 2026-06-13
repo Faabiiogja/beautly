@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum Role {
+  PLATFORM_ADMIN
+  PROFESSIONAL
+}
+
+enum BusinessStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum AppointmentStatus {
+  CONFIRMED
+  CANCELED_BY_CLIENT
+  CANCELED_BY_PROFESSIONAL
+  RESCHEDULED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  role         Role
+  businessId   String?
+  business     Business? @relation(fields: [businessId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Business {
+  id                  String         @id @default(cuid())
+  slug                String         @unique
+  name                String
+  contactPhone        String
+  defaultMessage      String?
+  logoUrl             String?
+  timezone            String         @default("America/Sao_Paulo")
+  slotIntervalMinutes Int            @default(30)
+  status              BusinessStatus @default(ACTIVE)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  users        User[]
+  services     Service[]
+  weeklyHours  WeeklyHours[]
+  dayClosures  DayClosure[]
+  appointments Appointment[]
+}
+
+model Service {
+  id              String   @id @default(cuid())
+  businessId      String
+  business        Business @relation(fields: [businessId], references: [id])
+  name            String
+  price           Int
+  durationMinutes Int
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  appointments Appointment[]
+
+  @@index([businessId])
+}
+
+model WeeklyHours {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id])
+  weekday    Int
+  isOpen     Boolean  @default(false)
+  startTime  String
+  endTime    String
+
+  @@unique([businessId, weekday])
+}
+
+model DayClosure {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id])
+  date       DateTime @db.Date
+
+  @@unique([businessId, date])
+  @@index([businessId])
+}
+
+model Appointment {
+  id                  String            @id @default(cuid())
+  businessId          String
+  business            Business          @relation(fields: [businessId], references: [id])
+  serviceId           String
+  service             Service           @relation(fields: [serviceId], references: [id])
+  customerName        String
+  customerPhone       String
+  startAt             DateTime
+  endAt               DateTime
+  status              AppointmentStatus @default(CONFIRMED)
+  serviceNameSnapshot String
+  priceSnapshot       Int
+  durationSnapshot    Int
+  rescheduledFromId   String?           @unique
+  rescheduledFrom     Appointment?      @relation("Reschedule", fields: [rescheduledFromId], references: [id])
+  rescheduledTo       Appointment?      @relation("Reschedule")
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([businessId, startAt])
+  @@index([businessId, customerPhone])
+}
+
+model OtpVerification {
+  id         String    @id @default(cuid())
+  businessId String
+  phone      String
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([businessId, phone])
+}
