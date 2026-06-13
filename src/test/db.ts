@@ -2,11 +2,25 @@ import { prisma } from "@/lib/prisma";
 
 /** Limpa as tabelas na ordem segura de FKs. Use em beforeEach de testes de integração. */
 export async function resetDb() {
-  await prisma.appointment.deleteMany();
-  await prisma.otpVerification.deleteMany();
-  await prisma.dayClosure.deleteMany();
-  await prisma.weeklyHours.deleteMany();
-  await prisma.service.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.business.deleteMany();
+  try {
+    await truncateAll();
+  } catch (error) {
+    if (!isClosedConnection(error)) throw error;
+    await prisma.$disconnect();
+    await truncateAll();
+  }
+}
+
+function truncateAll() {
+  return prisma.$executeRawUnsafe(
+    'TRUNCATE TABLE "Appointment", "OtpVerification", "DayClosure", "WeeklyHours", "Service", "User", "Business" RESTART IDENTITY CASCADE',
+  );
+}
+
+function isClosedConnection(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (error.message.includes("Server has closed the connection") ||
+      error.message.includes("prepared statement"))
+  );
 }
