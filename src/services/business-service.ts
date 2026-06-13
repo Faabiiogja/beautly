@@ -48,3 +48,35 @@ export async function isBusinessReady(businessId: string): Promise<boolean> {
   });
   return openDays > 0;
 }
+
+export function getWeeklyHours(businessId: string) {
+  return prisma.weeklyHours.findMany({
+    where: { businessId },
+    orderBy: { weekday: "asc" },
+  });
+}
+
+export interface WeeklyHoursRow {
+  weekday: number;
+  isOpen: boolean;
+  startTime: string;
+  endTime: string;
+}
+
+export async function updateWeeklyHours(
+  businessId: string,
+  rows: WeeklyHoursRow[],
+) {
+  await prisma.$transaction(
+    rows.map((row) =>
+      prisma.weeklyHours.update({
+        where: { businessId_weekday: { businessId, weekday: row.weekday } },
+        data: {
+          isOpen: row.isOpen,
+          startTime: row.startTime,
+          endTime: row.endTime,
+        },
+      }),
+    ),
+  );
+}
