@@ -6,8 +6,13 @@ export default async function BusinessPage() {
   const session = await requireProfessional();
   const business = await getBusiness(session.businessId!);
   return (
-    <main className="mx-auto max-w-md p-8">
-      <h1 className="mb-6 text-xl font-semibold">Dados do negocio</h1>
+    <main className="mx-auto max-w-md">
+      <h1 className="font-display text-2xl font-semibold text-zinc-900">
+        Dados do negócio
+      </h1>
+      <p className="mt-1 text-sm text-zinc-500">
+        Essas informações aparecem na sua página pública de agendamento.
+      </p>
       <BusinessForm
         defaults={{
           name: business.name,

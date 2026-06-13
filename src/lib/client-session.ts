@@ -1,25 +1,28 @@
 import { getIronSession, type SessionOptions } from "iron-session";
 import { cookies } from "next/headers";
+import { sessionSecret } from "@/lib/session-secret";
 
 export interface ClientSessionData {
   businessId?: string;
   phone?: string;
 }
 
-const options: SessionOptions = {
-  password: process.env.SESSION_SECRET as string,
-  cookieName: "beautly_client",
-  cookieOptions: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 30,
-  },
-};
+function options(): SessionOptions {
+  return {
+    password: sessionSecret(),
+    cookieName: "beautly_client",
+    cookieOptions: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 30,
+    },
+  };
+}
 
 export async function getClientSession() {
   const cookieStore = await cookies();
-  return getIronSession<ClientSessionData>(cookieStore, options);
+  return getIronSession<ClientSessionData>(cookieStore, options());
 }
 
 /** Telefone verificado para ESTE negocio? (isolamento 18.3) */

@@ -30,23 +30,43 @@ export async function updateLogoUrl(businessId: string, logoUrl: string) {
   await prisma.business.update({ where: { id: businessId }, data: { logoUrl } });
 }
 
-/** Regra 9.3: negócio pronto = ativo + ≥1 serviço ativo + ≥1 dia da semana aberto. */
-export async function isBusinessReady(businessId: string): Promise<boolean> {
+export interface BusinessReadiness {
+  active: boolean;
+  hasContact: boolean;
+  hasActiveService: boolean;
+  hasOpenDay: boolean;
+  ready: boolean;
+}
+
+/** Regra 9.3: negócio pronto = ativo + dados de contato + ≥1 serviço ativo + ≥1 dia aberto. */
+export async function businessReadiness(
+  businessId: string,
+): Promise<BusinessReadiness> {
   const business = await prisma.business.findUniqueOrThrow({
     where: { id: businessId },
   });
-  if (business.status !== "ACTIVE") return false;
-  if (!business.contactPhone || !business.name) return false;
-
   const activeServices = await prisma.service.count({
     where: { businessId, active: true },
   });
-  if (activeServices === 0) return false;
-
   const openDays = await prisma.weeklyHours.count({
     where: { businessId, isOpen: true },
   });
-  return openDays > 0;
+
+  const active = business.status === "ACTIVE";
+  const hasContact = Boolean(business.contactPhone && business.name);
+  const hasActiveService = activeServices > 0;
+  const hasOpenDay = openDays > 0;
+  return {
+    active,
+    hasContact,
+    hasActiveService,
+    hasOpenDay,
+    ready: active && hasContact && hasActiveService && hasOpenDay,
+  };
+}
+
+export async function isBusinessReady(businessId: string): Promise<boolean> {
+  return (await businessReadiness(businessId)).ready;
 }
 
 export function getWeeklyHours(businessId: string) {

@@ -17,28 +17,64 @@ export function AccessForm({ slug }: { slug: string }) {
     FormData
   >(verifyAccessAction, null);
 
-  return (
-    <div className="space-y-4">
-      <form action={reqAction} className="space-y-3">
-        <input type="hidden" name="slug" value={slug} />
-        <input name="phone" placeholder="Seu telefone" required className="w-full rounded border p-2" />
-        <button disabled={requesting} className="w-full rounded border p-2 text-sm disabled:opacity-50">
-          {requesting ? "Enviando..." : "Receber codigo"}
-        </button>
-        {reqState?.error && <p className="text-sm text-red-600">{reqState.error}</p>}
-        {reqState?.sent && <p className="text-sm text-green-600">Codigo enviado.</p>}
-      </form>
+  const sent = Boolean(reqState?.sent);
 
-      <form action={verAction} className="space-y-3">
-        <input type="hidden" name="slug" value={slug} />
-        <input name="phone" placeholder="Confirme o telefone" required className="w-full rounded border p-2" />
-        <input name="code" placeholder="Codigo" required className="w-full rounded border p-2" />
-        <button disabled={verifying} className="w-full rounded bg-black p-2 text-white disabled:opacity-50">
-          {verifying ? "Verificando..." : "Acessar"}
-        </button>
-        {verState?.error && <p className="text-sm text-red-600">{verState.error}</p>}
-        {verState?.ok && <p className="text-sm text-green-600">Telefone verificado.</p>}
-      </form>
-    </div>
+  return (
+    <form className="card space-y-4 p-5">
+      <p className="text-sm text-zinc-600">
+        Para ver seus agendamentos, confirme o telefone usado na hora de
+        agendar.
+      </p>
+
+      <input type="hidden" name="slug" value={slug} />
+
+      <div>
+        <label htmlFor="access-phone" className="field-label">
+          Telefone (WhatsApp)
+        </label>
+        <input
+          id="access-phone"
+          name="phone"
+          type="tel"
+          inputMode="tel"
+          placeholder="(11) 99999-8888"
+          required
+          className="input"
+        />
+      </div>
+
+      <button
+        formAction={reqAction}
+        disabled={requesting}
+        className={sent ? "btn-secondary w-full" : "btn-primary w-full"}
+      >
+        {requesting ? "Enviando..." : sent ? "Reenviar código" : "Receber código"}
+      </button>
+      {reqState?.error && <p className="alert-error">{reqState.error}</p>}
+      {sent && (
+        <p className="alert-success">
+          Código enviado! Confira seu telefone e digite abaixo.
+        </p>
+      )}
+
+      <div>
+        <label htmlFor="access-code" className="field-label">
+          Código recebido
+        </label>
+        <input
+          id="access-code"
+          name="code"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          placeholder="000000"
+          className="input"
+        />
+      </div>
+
+      <button formAction={verAction} disabled={verifying} className="btn-primary w-full">
+        {verifying ? "Verificando..." : "Acessar meus agendamentos"}
+      </button>
+      {verState?.error && <p className="alert-error">{verState.error}</p>}
+    </form>
   );
 }

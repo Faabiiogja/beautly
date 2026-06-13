@@ -1,7 +1,7 @@
 import { resetDb } from "@/test/db";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createProfessional } from "./professional-service";
-import { sendOtp, verifyOtp } from "./otp-service";
+import { OtpRateLimitError, sendOtp, verifyOtp } from "./otp-service";
 
 let businessId: string;
 
@@ -37,5 +37,17 @@ describe("otp", () => {
       await verifyOtp(businessId, "11999999999", "111111");
     }
     expect(await verifyOtp(businessId, "11999999999", code)).toBe(false);
+  });
+
+  it("throttles an immediate resend to the same phone", async () => {
+    await sendOtp(businessId, "11999999999");
+    await expect(sendOtp(businessId, "11999999999")).rejects.toBeInstanceOf(
+      OtpRateLimitError,
+    );
+  });
+
+  it("does not throttle a different phone", async () => {
+    await sendOtp(businessId, "11999999999");
+    await expect(sendOtp(businessId, "11888888888")).resolves.toBeDefined();
   });
 });

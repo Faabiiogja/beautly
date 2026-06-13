@@ -1,14 +1,15 @@
 "use server";
 
 import { getClientSession } from "@/lib/client-session";
+import { normalizePhone } from "@/lib/phone";
 import { confirmBooking, SlotTakenError } from "@/services/booking-service";
-import { sendOtp, verifyOtp } from "@/services/otp-service";
+import { OtpRateLimitError, sendOtp, verifyOtp } from "@/services/otp-service";
 import { findBusinessBySlug } from "@/repositories/business-repository";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
 const sendSchema = z.object({
-  slug: z.string(),
+  slug: z.string().min(1),
   phone: z.string().min(8),
 });
 
@@ -25,20 +26,32 @@ export async function sendCodeAction(
     slug: formData.get("slug"),
     phone: formData.get("phone"),
   });
-  if (!parsed.success) return { error: "Telefone invalido." };
+  if (!parsed.success) return { error: "Telefone inválido." };
+
+  const phone = normalizePhone(parsed.data.phone);
+  if (!phone) return { error: "Informe o telefone com DDD, ex: 11 99999-8888." };
 
   const business = await findBusinessBySlug(parsed.data.slug);
-  if (!business || business.status !== "ACTIVE") return { error: "Indisponivel." };
+  if (!business || business.status !== "ACTIVE") {
+    return { error: "Agendamentos indisponíveis no momento." };
+  }
 
-  await sendOtp(business.id, parsed.data.phone);
+  try {
+    await sendOtp(business.id, phone);
+  } catch (error) {
+    if (error instanceof OtpRateLimitError) return { error: error.message };
+    return { error: "Não foi possível enviar o código. Tente novamente." };
+  }
   return { sent: true };
 }
 
 const confirmSchema = z.object({
-  slug: z.string(),
-  serviceId: z.string(),
-  startAt: z.string(),
-  customerName: z.string().min(1),
+  slug: z.string().min(1),
+  serviceId: z.string().min(1),
+  startAt: z
+    .string()
+    .refine((value) => !Number.isNaN(Date.parse(value)), "Data inválida."),
+  customerName: z.string().trim().min(2).max(120),
   phone: z.string().min(8),
   code: z.string().min(4),
 });
@@ -61,15 +74,20 @@ export async function confirmAction(
   });
   if (!parsed.success) return { error: "Preencha todos os campos." };
 
-  const business = await findBusinessBySlug(parsed.data.slug);
-  if (!business || business.status !== "ACTIVE") return { error: "Indisponivel." };
+  const phone = normalizePhone(parsed.data.phone);
+  if (!phone) return { error: "Informe o telefone com DDD, ex: 11 99999-8888." };
 
-  const ok = await verifyOtp(business.id, parsed.data.phone, parsed.data.code);
-  if (!ok) return { error: "Codigo invalido ou expirado." };
+  const business = await findBusinessBySlug(parsed.data.slug);
+  if (!business || business.status !== "ACTIVE") {
+    return { error: "Agendamentos indisponíveis no momento." };
+  }
+
+  const ok = await verifyOtp(business.id, phone, parsed.data.code);
+  if (!ok) return { error: "Código inválido ou expirado." };
 
   const session = await getClientSession();
   session.businessId = business.id;
-  session.phone = parsed.data.phone;
+  session.phone = phone;
   await session.save();
 
   try {
@@ -77,12 +95,12 @@ export async function confirmAction(
       businessId: business.id,
       serviceId: parsed.data.serviceId,
       customerName: parsed.data.customerName,
-      customerPhone: parsed.data.phone,
+      customerPhone: phone,
       startAt: new Date(parsed.data.startAt),
     });
   } catch (error) {
     if (error instanceof SlotTakenError) return { error: error.message };
-    return { error: "Nao foi possivel confirmar." };
+    return { error: "Não foi possível confirmar. Tente novamente." };
   }
 
   redirect(

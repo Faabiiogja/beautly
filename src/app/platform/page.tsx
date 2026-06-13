@@ -8,26 +8,46 @@ export default async function PlatformHome() {
   const professionals = await listProfessionals();
 
   return (
-    <main className="mx-auto max-w-3xl p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Profissionais</h1>
-        <Link
-          href="/platform/professionals/new"
-          className="rounded bg-black px-3 py-2 text-white"
-        >
+    <main>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="font-display text-2xl font-semibold text-zinc-900">
+          Profissionais
+        </h1>
+        <Link href="/platform/professionals/new" className="btn-primary">
           Nova profissional
         </Link>
       </div>
-      <ul className="divide-y">
+
+      <ul className="mt-6 space-y-3">
         {professionals.map((professional) => (
           <li
             key={professional.id}
-            className="flex items-center justify-between py-3"
+            className="card flex items-center justify-between gap-3 p-4"
           >
-            <div>
-              <p className="font-medium">{professional.name}</p>
-              <p className="text-sm text-gray-500">
-                /{professional.slug} · {professional.status}
+            <div className="min-w-0">
+              <p className="flex items-center gap-2 font-medium text-zinc-900">
+                {professional.name}
+                <span
+                  className={`badge ${
+                    professional.status === "ACTIVE"
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-zinc-100 text-zinc-500"
+                  }`}
+                >
+                  {professional.status === "ACTIVE" ? "Ativa" : "Inativa"}
+                </span>
+              </p>
+              <p className="mt-0.5 text-sm text-zinc-500">
+                <Link
+                  href={`/${professional.slug}`}
+                  target="_blank"
+                  className="text-brand-700 hover:underline"
+                >
+                  /{professional.slug}
+                </Link>
+                {professional.users[0] && (
+                  <span> · {professional.users[0].email}</span>
+                )}
               </p>
             </div>
             <form action={toggleStatusAction}>
@@ -37,16 +57,14 @@ export default async function PlatformHome() {
                 name="next"
                 value={professional.status === "ACTIVE" ? "INACTIVE" : "ACTIVE"}
               />
-              <button className="rounded border px-3 py-1 text-sm">
+              <button className="btn-secondary whitespace-nowrap py-1.5 text-xs">
                 {professional.status === "ACTIVE" ? "Inativar" : "Ativar"}
               </button>
             </form>
           </li>
         ))}
         {professionals.length === 0 && (
-          <li className="py-3 text-sm text-gray-500">
-            Nenhuma profissional cadastrada.
-          </li>
+          <li className="alert-info">Nenhuma profissional cadastrada ainda.</li>
         )}
       </ul>
     </main>

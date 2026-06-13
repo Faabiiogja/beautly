@@ -53,6 +53,71 @@ describe("confirmBooking", () => {
     expect(appointment.endAt.toISOString()).toBe("2026-06-15T13:00:00.000Z");
   });
 
+  it("rejects a slot outside business hours", async () => {
+    // 03:00 local (06:00 UTC) — fora do horário 09:00–18:00
+    await expect(
+      confirmBooking({
+        businessId,
+        serviceId,
+        customerName: "Joana",
+        customerPhone: "111",
+        startAt: new Date("2026-06-15T06:00:00.000Z"),
+      }),
+    ).rejects.toBeInstanceOf(SlotTakenError);
+  });
+
+  it("rejects a slot off the interval grid", async () => {
+    // 09:13 local não é múltiplo do slotIntervalMinutes
+    await expect(
+      confirmBooking({
+        businessId,
+        serviceId,
+        customerName: "Joana",
+        customerPhone: "111",
+        startAt: new Date("2026-06-15T12:13:00.000Z"),
+      }),
+    ).rejects.toBeInstanceOf(SlotTakenError);
+  });
+
+  it("rejects a slot in the past", async () => {
+    await expect(
+      confirmBooking({
+        businessId,
+        serviceId,
+        customerName: "Joana",
+        customerPhone: "111",
+        startAt: new Date("2026-06-12T12:00:00.000Z"),
+      }),
+    ).rejects.toBeInstanceOf(SlotTakenError);
+  });
+
+  it("rejects a slot on a closed day", async () => {
+    await prisma.dayClosure.create({
+      data: { businessId, date: new Date("2026-06-15T00:00:00.000Z") },
+    });
+    await expect(
+      confirmBooking({
+        businessId,
+        serviceId,
+        customerName: "Joana",
+        customerPhone: "111",
+        startAt: new Date("2026-06-15T12:00:00.000Z"),
+      }),
+    ).rejects.toBeInstanceOf(SlotTakenError);
+  });
+
+  it("rejects an invalid startAt date", async () => {
+    await expect(
+      confirmBooking({
+        businessId,
+        serviceId,
+        customerName: "Joana",
+        customerPhone: "111",
+        startAt: new Date("garbage"),
+      }),
+    ).rejects.toBeInstanceOf(SlotTakenError);
+  });
+
   it("rejects a slot that overlaps an existing appointment", async () => {
     await confirmBooking({
       businessId,

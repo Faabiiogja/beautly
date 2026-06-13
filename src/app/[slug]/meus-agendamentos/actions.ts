@@ -1,12 +1,13 @@
 "use server";
 
 import { getClientSession } from "@/lib/client-session";
+import { normalizePhone } from "@/lib/phone";
 import {
   cancelByClient,
   rescheduleByClient,
   SlotTakenError,
 } from "@/services/booking-service";
-import { sendOtp, verifyOtp } from "@/services/otp-service";
+import { OtpRateLimitError, sendOtp, verifyOtp } from "@/services/otp-service";
 import { findBusinessBySlug } from "@/repositories/business-repository";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -17,43 +18,65 @@ export interface AccessState {
   ok?: boolean;
 }
 
+const requestSchema = z.object({
+  slug: z.string().min(1),
+  phone: z.string().min(8),
+});
+
 export async function requestAccessAction(
   _prev: AccessState | null,
   formData: FormData,
 ): Promise<AccessState> {
-  const slug = String(formData.get("slug"));
-  const phone = String(formData.get("phone"));
-  const business = await findBusinessBySlug(slug);
-  if (!business) return { error: "Indisponivel." };
-  await sendOtp(business.id, phone);
+  const parsed = requestSchema.safeParse({
+    slug: formData.get("slug"),
+    phone: formData.get("phone"),
+  });
+  if (!parsed.success) return { error: "Telefone inválido." };
+
+  const phone = normalizePhone(parsed.data.phone);
+  if (!phone) return { error: "Informe o telefone com DDD, ex: 11 99999-8888." };
+
+  const business = await findBusinessBySlug(parsed.data.slug);
+  if (!business) return { error: "Página indisponível." };
+
+  try {
+    await sendOtp(business.id, phone);
+  } catch (error) {
+    if (error instanceof OtpRateLimitError) return { error: error.message };
+    return { error: "Não foi possível enviar o código. Tente novamente." };
+  }
   return { sent: true };
 }
+
+const verifySchema = z.object({
+  slug: z.string().min(1),
+  phone: z.string().min(8),
+  code: z.string().min(4),
+});
 
 export async function verifyAccessAction(
   _prev: AccessState | null,
   formData: FormData,
 ): Promise<AccessState> {
-  const schema = z.object({
-    slug: z.string(),
-    phone: z.string().min(8),
-    code: z.string().min(4),
-  });
-  const parsed = schema.safeParse({
+  const parsed = verifySchema.safeParse({
     slug: formData.get("slug"),
     phone: formData.get("phone"),
     code: formData.get("code"),
   });
-  if (!parsed.success) return { error: "Dados invalidos." };
+  if (!parsed.success) return { error: "Dados inválidos." };
+
+  const phone = normalizePhone(parsed.data.phone);
+  if (!phone) return { error: "Informe o telefone com DDD, ex: 11 99999-8888." };
 
   const business = await findBusinessBySlug(parsed.data.slug);
-  if (!business) return { error: "Indisponivel." };
+  if (!business) return { error: "Página indisponível." };
 
-  const ok = await verifyOtp(business.id, parsed.data.phone, parsed.data.code);
-  if (!ok) return { error: "Codigo invalido ou expirado." };
+  const ok = await verifyOtp(business.id, phone, parsed.data.code);
+  if (!ok) return { error: "Código inválido ou expirado." };
 
   const session = await getClientSession();
   session.businessId = business.id;
-  session.phone = parsed.data.phone;
+  session.phone = phone;
   await session.save();
   revalidatePath(`/${parsed.data.slug}/meus-agendamentos`);
   return { ok: true };
@@ -74,29 +97,43 @@ export interface RescheduleState {
   ok?: boolean;
 }
 
+const rescheduleSchema = z.object({
+  slug: z.string().min(1),
+  id: z.string().min(1),
+  startAt: z
+    .string()
+    .refine((value) => !Number.isNaN(Date.parse(value)), "Data inválida."),
+});
+
 export async function rescheduleAction(
   _prev: RescheduleState | null,
   formData: FormData,
 ): Promise<RescheduleState> {
-  const slug = String(formData.get("slug"));
-  const business = await findBusinessBySlug(slug);
-  if (!business) return { error: "Indisponivel." };
+  const parsed = rescheduleSchema.safeParse({
+    slug: formData.get("slug"),
+    id: formData.get("id"),
+    startAt: formData.get("startAt"),
+  });
+  if (!parsed.success) return { error: "Escolha um novo horário." };
+
+  const business = await findBusinessBySlug(parsed.data.slug);
+  if (!business) return { error: "Página indisponível." };
   const session = await getClientSession();
   if (session.businessId !== business.id || !session.phone) {
-    return { error: "Sessao expirada." };
+    return { error: "Sessão expirada. Confirme seu telefone novamente." };
   }
 
   try {
     await rescheduleByClient(
       business.id,
       session.phone,
-      String(formData.get("id")),
-      new Date(String(formData.get("startAt"))),
+      parsed.data.id,
+      new Date(parsed.data.startAt),
     );
   } catch (error) {
     if (error instanceof SlotTakenError) return { error: error.message };
-    return { error: "Nao foi possivel remarcar." };
+    return { error: "Não foi possível remarcar. Tente novamente." };
   }
-  revalidatePath(`/${slug}/meus-agendamentos`);
+  revalidatePath(`/${parsed.data.slug}/meus-agendamentos`);
   return { ok: true };
 }

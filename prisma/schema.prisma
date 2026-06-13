@@ -118,6 +118,21 @@ model Appointment {
   @@index([businessId, customerPhone])
 }
 
+model StoredFile {
+  key         String   @id
+  data        Bytes
+  contentType String
+  updatedAt   DateTime @updatedAt
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+}
+
 model OtpVerification {
   id         String    @id @default(cuid())
   businessId String

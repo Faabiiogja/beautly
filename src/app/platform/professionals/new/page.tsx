@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import {
   createProfessionalAction,
@@ -13,52 +14,100 @@ export default function NewProfessionalPage() {
   >(createProfessionalAction, null);
 
   return (
-    <main className="mx-auto max-w-md p-8">
-      <h1 className="mb-6 text-xl font-semibold">Nova profissional</h1>
-      <form action={action} className="space-y-4">
-        <input
-          name="businessName"
-          placeholder="Nome do negócio"
-          required
-          className="w-full rounded border p-2"
-        />
-        <input
-          name="slug"
-          placeholder="slug-da-pagina"
-          required
-          className="w-full rounded border p-2"
-        />
-        <input
-          name="contactPhone"
-          placeholder="Telefone de contato"
-          required
-          className="w-full rounded border p-2"
-        />
-        <input
-          name="email"
-          type="email"
-          placeholder="E-mail de acesso"
-          required
-          className="w-full rounded border p-2"
-        />
-        <input
-          name="password"
-          type="password"
-          placeholder="Senha inicial"
-          required
-          className="w-full rounded border p-2"
-        />
-        <label className="flex items-center gap-2 text-sm">
-          <input name="startActive" type="checkbox" defaultChecked /> Iniciar
-          ativa
+    <main className="mx-auto max-w-md">
+      <Link
+        href="/platform"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-brand-700"
+      >
+        ← Voltar
+      </Link>
+      <h1 className="font-display text-2xl font-semibold text-zinc-900">
+        Nova profissional
+      </h1>
+      <form action={action} className="card mt-6 space-y-4 p-5">
+        <div>
+          <label htmlFor="businessName" className="field-label">
+            Nome do negócio
+          </label>
+          <input
+            id="businessName"
+            name="businessName"
+            placeholder="Maria Nails"
+            required
+            className="input"
+          />
+        </div>
+        <div>
+          <label htmlFor="slug" className="field-label">
+            Endereço da página
+          </label>
+          <div className="flex items-center gap-1">
+            <span className="text-sm text-zinc-400">beautly.com/</span>
+            <input
+              id="slug"
+              name="slug"
+              placeholder="maria-nails"
+              pattern="[a-z0-9-]+"
+              title="Apenas letras minúsculas, números e hífen"
+              required
+              className="input"
+            />
+          </div>
+        </div>
+        <div>
+          <label htmlFor="contactPhone" className="field-label">
+            Telefone de contato
+          </label>
+          <input
+            id="contactPhone"
+            name="contactPhone"
+            type="tel"
+            placeholder="(11) 99999-8888"
+            required
+            className="input"
+          />
+        </div>
+        <div>
+          <label htmlFor="email" className="field-label">
+            E-mail de acesso
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="maria@exemplo.com"
+            required
+            className="input"
+          />
+        </div>
+        <div>
+          <label htmlFor="password" className="field-label">
+            Senha inicial
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            minLength={6}
+            required
+            className="input"
+          />
+          <p className="mt-1 text-xs text-zinc-500">
+            Combine com a profissional a troca da senha no primeiro acesso.
+          </p>
+        </div>
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+          <input
+            name="startActive"
+            type="checkbox"
+            defaultChecked
+            className="h-4 w-4 rounded accent-brand-600"
+          />
+          Iniciar ativa (já pode receber agendamentos)
         </label>
-        {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full rounded bg-black p-2 text-white disabled:opacity-50"
-        >
-          {pending ? "Salvando..." : "Cadastrar"}
+        {state?.error && <p className="alert-error">{state.error}</p>}
+        <button type="submit" disabled={pending} className="btn-primary w-full">
+          {pending ? "Salvando..." : "Cadastrar profissional"}
         </button>
       </form>
     </main>

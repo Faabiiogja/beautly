@@ -1,7 +1,7 @@
 "use server";
 
 import { getSession } from "@/lib/session";
-import { authenticate } from "@/services/auth-service";
+import { authenticate, LoginRateLimitError } from "@/services/auth-service";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -21,7 +21,13 @@ export async function loginAction(
   });
   if (!parsed.success) return { error: "Dados inválidos." };
 
-  const result = await authenticate(parsed.data.email, parsed.data.password);
+  let result;
+  try {
+    result = await authenticate(parsed.data.email, parsed.data.password);
+  } catch (error) {
+    if (error instanceof LoginRateLimitError) return { error: error.message };
+    throw error;
+  }
   if (!result || result.role !== "PROFESSIONAL") {
     return { error: "E-mail ou senha incorretos." };
   }

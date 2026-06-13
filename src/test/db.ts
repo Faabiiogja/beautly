@@ -13,7 +13,7 @@ export async function resetDb() {
 
 function truncateAll() {
   return prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "Appointment", "OtpVerification", "DayClosure", "WeeklyHours", "Service", "User", "Business" RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE "Appointment", "OtpVerification", "DayClosure", "WeeklyHours", "Service", "User", "Business", "StoredFile", "LoginAttempt" RESTART IDENTITY CASCADE',
   );
 }
 

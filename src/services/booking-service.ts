@@ -1,11 +1,33 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma, PrismaClient } from "@prisma/client";
+import { formatInTimeZone } from "date-fns-tz";
+import { availableSlots } from "./availability-service";
 
 export class SlotTakenError extends Error {
   constructor() {
-    super("Horario nao esta mais disponivel.");
+    super("Horário não está mais disponível.");
     this.name = "SlotTakenError";
   }
+}
+
+/**
+ * Garante que o horário pedido é um dos slots realmente ofertados
+ * (dia aberto, dentro do horário semanal, na grade, futuro, dentro da
+ * janela e sem conflito). Impede agendamento com `startAt` forjado.
+ */
+async function assertSlotOffered(
+  businessId: string,
+  serviceId: string,
+  startAt: Date,
+  timezone: string,
+) {
+  if (Number.isNaN(startAt.getTime())) throw new SlotTakenError();
+  const dateStr = formatInTimeZone(startAt, timezone, "yyyy-MM-dd");
+  const slots = await availableSlots(businessId, serviceId, dateStr);
+  const offered = slots.some(
+    (slot) => slot.startAt.getTime() === startAt.getTime(),
+  );
+  if (!offered) throw new SlotTakenError();
 }
 
 type Tx = Prisma.TransactionClient | PrismaClient;
@@ -36,17 +58,30 @@ export interface ConfirmInput {
 }
 
 export async function confirmBooking(input: ConfirmInput) {
+  const businessForTz = await prisma.business.findUnique({
+    where: { id: input.businessId },
+  });
+  if (!businessForTz || businessForTz.status !== "ACTIVE") {
+    throw new Error("Negócio indisponível.");
+  }
+  await assertSlotOffered(
+    input.businessId,
+    input.serviceId,
+    input.startAt,
+    businessForTz.timezone,
+  );
+
   return prisma.$transaction(async (tx) => {
     const business = await tx.business.findUnique({
       where: { id: input.businessId },
     });
     if (!business || business.status !== "ACTIVE") {
-      throw new Error("Negocio indisponivel.");
+      throw new Error("Negócio indisponível.");
     }
     const service = await tx.service.findFirst({
       where: { id: input.serviceId, businessId: input.businessId, active: true },
     });
-    if (!service) throw new Error("Servico indisponivel.");
+    if (!service) throw new Error("Serviço indisponível.");
 
     const endAt = new Date(
       input.startAt.getTime() + service.durationMinutes * 60 * 1000,
@@ -92,7 +127,7 @@ export async function cancelByClient(
     },
     data: { status: "CANCELED_BY_CLIENT" },
   });
-  if (result.count === 0) throw new Error("Agendamento nao encontrado.");
+  if (result.count === 0) throw new Error("Agendamento não encontrado.");
 }
 
 export async function rescheduleByClient(
@@ -101,11 +136,23 @@ export async function rescheduleByClient(
   appointmentId: string,
   newStartAt: Date,
 ) {
+  const existing = await prisma.appointment.findFirst({
+    where: { id: appointmentId, businessId, customerPhone: phone, status: "CONFIRMED" },
+    include: { business: true },
+  });
+  if (!existing) throw new Error("Agendamento não encontrado.");
+  await assertSlotOffered(
+    businessId,
+    existing.serviceId,
+    newStartAt,
+    existing.business.timezone,
+  );
+
   return prisma.$transaction(async (tx) => {
     const old = await tx.appointment.findFirst({
       where: { id: appointmentId, businessId, customerPhone: phone, status: "CONFIRMED" },
     });
-    if (!old) throw new Error("Agendamento nao encontrado.");
+    if (!old) throw new Error("Agendamento não encontrado.");
 
     const service = await tx.service.findFirstOrThrow({
       where: { id: old.serviceId, businessId, active: true },

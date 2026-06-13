@@ -1,5 +1,6 @@
 import { getIronSession, type SessionOptions } from "iron-session";
 import { cookies } from "next/headers";
+import { sessionSecret } from "@/lib/session-secret";
 
 export interface SessionData {
   userId: string;
@@ -7,17 +8,20 @@ export interface SessionData {
   businessId: string | null;
 }
 
-const options: SessionOptions = {
-  password: process.env.SESSION_SECRET as string,
-  cookieName: "beautly_session",
-  cookieOptions: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-  },
-};
+function options(): SessionOptions {
+  return {
+    password: sessionSecret(),
+    cookieName: "beautly_session",
+    cookieOptions: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 12,
+    },
+  };
+}
 
 export async function getSession() {
   const cookieStore = await cookies();
-  return getIronSession<SessionData>(cookieStore, options);
+  return getIronSession<SessionData>(cookieStore, options());
 }
