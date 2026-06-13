@@ -1,5 +1,6 @@
 import { findBusinessBySlug } from "@/repositories/business-repository";
 import { listActiveServices } from "@/services/service-catalog";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -29,9 +30,11 @@ export default async function PublicBusinessPage({
     <main className="mx-auto max-w-md p-8">
       <header className="mb-6 flex items-center gap-3">
         {business.logoUrl && (
-          <img
+          <Image
             src={business.logoUrl}
             alt=""
+            width={64}
+            height={64}
             className="h-16 w-16 rounded-full object-cover"
           />
         )}

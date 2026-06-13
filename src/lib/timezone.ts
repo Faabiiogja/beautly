@@ -19,7 +19,8 @@ export function minutesToUtc(
 }
 
 /** Dia da semana (0=domingo) da data civil "YYYY-MM-DD". */
-export function localWeekday(dateStr: string, _timeZone: string): number {
+export function localWeekday(dateStr: string, timeZone: string): number {
+  void timeZone;
   const [y, m, d] = dateStr.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d, 12)).getUTCDay();
 }

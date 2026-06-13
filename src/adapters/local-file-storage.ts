@@ -6,7 +6,8 @@ import type { FileStorage } from "@/ports/file-storage";
 export class LocalFileStorage implements FileStorage {
   private readonly root = path.join(process.cwd(), "public", "uploads");
 
-  async save(key: string, data: Buffer, _contentType: string): Promise<string> {
+  async save(key: string, data: Buffer, contentType: string): Promise<string> {
+    void contentType;
     await fs.mkdir(this.root, { recursive: true });
     await fs.writeFile(path.join(this.root, key), data);
     return `/uploads/${key}`;

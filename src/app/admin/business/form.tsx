@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useActionState } from "react";
 import {
   saveBusinessAction,
@@ -36,7 +37,15 @@ export function BusinessForm({ defaults }: Props) {
       </form>
 
       <form action="/api/logo" method="post" encType="multipart/form-data" className="space-y-3">
-        {defaults.logoUrl && <img src={defaults.logoUrl} alt="logo" className="h-20 w-20 rounded object-cover" />}
+        {defaults.logoUrl && (
+          <Image
+            src={defaults.logoUrl}
+            alt="logo"
+            width={80}
+            height={80}
+            className="h-20 w-20 rounded object-cover"
+          />
+        )}
         <input name="logo" type="file" accept="image/png,image/jpeg,image/webp" required />
         <button className="rounded border px-4 py-2">Enviar logo</button>
       </form>
