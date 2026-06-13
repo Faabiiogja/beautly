@@ -7,6 +7,7 @@ import {
   rescheduleAction,
   type RescheduleState,
 } from "./actions";
+import { StatusBadge } from "@/components/status-badge";
 
 interface Appt {
   id: string;
@@ -23,19 +24,6 @@ interface SlotOption {
   label: string;
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  CONFIRMED: "Confirmado",
-  CANCELED_BY_CLIENT: "Cancelado por você",
-  CANCELED_BY_PROFESSIONAL: "Cancelado pela profissional",
-  RESCHEDULED: "Remarcado",
-};
-
-const STATUS_BADGE: Record<string, string> = {
-  CONFIRMED: "bg-emerald-100 text-emerald-800",
-  CANCELED_BY_CLIENT: "bg-zinc-100 text-zinc-600",
-  CANCELED_BY_PROFESSIONAL: "bg-red-100 text-red-700",
-  RESCHEDULED: "bg-amber-100 text-amber-800",
-};
 
 export function AppointmentsList({
   slug,
@@ -88,11 +76,7 @@ export function AppointmentsList({
                     · R$ {appointment.price}
                   </p>
                 </div>
-                <span
-                  className={`badge ${STATUS_BADGE[appointment.status] ?? "bg-zinc-100 text-zinc-600"}`}
-                >
-                  {STATUS_LABEL[appointment.status] ?? appointment.status}
-                </span>
+                <StatusBadge status={appointment.status} />
               </div>
 
               {appointment.status === "CONFIRMED" && (
