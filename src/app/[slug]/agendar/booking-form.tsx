@@ -1,7 +1,8 @@
 "use client";
 
+import { OtpInput } from "@/components/otp-input";
 import { useRouter } from "next/navigation";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import {
   confirmAction,
   sendCodeAction,
@@ -9,26 +10,45 @@ import {
   type SendCodeState,
 } from "./actions";
 
+interface Day {
+  value: string;
+  weekday: string;
+  day: string;
+}
+
 interface Props {
   slug: string;
   serviceId: string;
   selectedDate: string;
-  minDate: string;
-  maxDate: string;
+  monthLabel: string;
+  selectedLabel: string;
+  days: Day[];
   slots: { iso: string; label: string }[];
 }
 
-function formatDateBr(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-");
-  return `${d}/${m}/${y}`;
+function StepHeader({ n, title }: { n: number; title: string }) {
+  return (
+    <div className="mb-3.5 flex items-center gap-2.5">
+      <span className="gradient-brand flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold text-white">
+        {n}
+      </span>
+      <h2 className="font-display text-[17px] font-semibold text-[#2c1f29]">
+        {title}
+      </h2>
+    </div>
+  );
 }
+
+const cardClass =
+  "rounded-[22px] border border-[#f0e6ee] bg-white p-4 shadow-[0_4px_14px_-8px_rgba(157,23,77,0.16)]";
 
 export function BookingForm({
   slug,
   serviceId,
   selectedDate,
-  minDate,
-  maxDate,
+  monthLabel,
+  selectedLabel,
+  days,
   slots,
 }: Props) {
   const router = useRouter();
@@ -36,6 +56,7 @@ export function BookingForm({
     null,
   );
   const [phone, setPhone] = useState("");
+  const [cooldown, setCooldown] = useState(0);
   const [sendState, sendAction, sending] = useActionState<
     SendCodeState | null,
     FormData
@@ -45,72 +66,138 @@ export function BookingForm({
     FormData
   >(confirmAction, null);
 
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => setCooldown((c) => (c > 0 ? c - 1 : 0)), 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
+  function selectDate(value: string) {
+    setChosen(null);
+    router.push(`/${slug}/agendar?serviceId=${serviceId}&date=${value}`);
+  }
+
+  function requestCode() {
+    const form = new FormData();
+    form.set("slug", slug);
+    form.set("phone", phone);
+    sendAction(form);
+    setCooldown(60);
+  }
+
+  const phoneReady = phone.replace(/\D/g, "").length >= 10;
+  const cooldownLabel = `${Math.floor(cooldown / 60)}:${String(cooldown % 60).padStart(2, "0")}`;
+
   return (
     <div className="space-y-6">
-      <section className="card space-y-4 p-5">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          1 · Escolha data e horário
-        </h2>
-        <div>
-          <label htmlFor="booking-date" className="field-label">
-            Data
-          </label>
-          <input
-            id="booking-date"
-            type="date"
-            defaultValue={selectedDate}
-            min={minDate}
-            max={maxDate}
-            onChange={(event) => {
-              setChosen(null);
-              router.push(
-                `/${slug}/agendar?serviceId=${serviceId}&date=${event.target.value}`,
-              );
-            }}
-            className="input"
-          />
-        </div>
+      {/* PASSO 1 — data e horário */}
+      <section>
+        <StepHeader n={1} title="Escolha data e horário" />
+        <div className={cardClass}>
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-sm font-semibold text-[#574a54]">
+              {monthLabel}
+            </span>
+            <span className="text-xs font-medium text-[#b09cb6]">
+              próximos 15 dias
+            </span>
+          </div>
 
-        <div>
-          <p className="field-label">Horários disponíveis</p>
-          {slots.length === 0 ? (
-            <p className="alert-info">
-              Não há horários disponíveis para este serviço nesta data. Tente
-              outro dia.
-            </p>
-          ) : (
-            <div className="grid grid-cols-4 gap-2">
-              {slots.map((slot) => (
+          <div className="-mx-1 mb-4 flex gap-2.5 overflow-x-auto px-1 pb-1.5">
+            {days.map((d) => {
+              const active = d.value === selectedDate;
+              return (
                 <button
-                  key={slot.iso}
+                  key={d.value}
                   type="button"
-                  onClick={() => setChosen(slot)}
-                  aria-pressed={chosen?.iso === slot.iso}
-                  className={`chip ${chosen?.iso === slot.iso ? "chip-selected" : ""}`}
+                  onClick={() => selectDate(d.value)}
+                  aria-pressed={active}
+                  className={`w-[52px] shrink-0 rounded-[15px] py-2.5 text-center transition ${
+                    active
+                      ? "gradient-brand text-white shadow-[0_8px_18px_-8px_rgba(236,72,153,0.6)]"
+                      : "border border-[#ecdfeb] bg-white text-[#574a54]"
+                  }`}
                 >
-                  {slot.label}
+                  <span
+                    className={`block text-[11px] font-bold tracking-wide ${active ? "opacity-90" : ""}`}
+                  >
+                    {d.weekday}
+                  </span>
+                  <span className="font-display mt-0.5 block text-lg font-semibold">
+                    {d.day}
+                  </span>
                 </button>
-              ))}
+              );
+            })}
+          </div>
+
+          {slots.length === 0 ? (
+            <div className="px-3 pb-3.5 pt-6 text-center">
+              <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f6f1f8]">
+                <svg
+                  width="26"
+                  height="26"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#c3a9cf"
+                  strokeWidth="2"
+                  aria-hidden
+                >
+                  <rect x="3" y="5" width="18" height="16" rx="3" />
+                  <path d="M3 10h18M8 3v4M16 3v4" />
+                  <path d="M9 15l6 4M15 15l-6 4" opacity=".6" />
+                </svg>
+              </span>
+              <p className="text-[15px] font-semibold text-[#574a54]">
+                Sem horários neste dia
+              </p>
+              <p className="mt-1.5 text-[13.5px] leading-relaxed text-[#a394aa]">
+                Não há horários disponíveis nesta data. Tente outro dia.
+              </p>
             </div>
+          ) : (
+            <>
+              <p className="mb-2.5 text-[13px] font-semibold capitalize text-[#574a54]">
+                Horários — {selectedLabel}
+              </p>
+              <div className="grid grid-cols-3 gap-2.5">
+                {slots.map((slot) => {
+                  const active = chosen?.iso === slot.iso;
+                  return (
+                    <button
+                      key={slot.iso}
+                      type="button"
+                      onClick={() => setChosen(slot)}
+                      aria-pressed={active}
+                      className={`rounded-[13px] py-3 text-center text-sm font-semibold transition ${
+                        active
+                          ? "gradient-brand text-white shadow-[0_8px_16px_-8px_rgba(236,72,153,0.6)]"
+                          : "border border-[#ecdfeb] bg-white text-[#574a54]"
+                      }`}
+                    >
+                      {slot.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       </section>
 
-      {chosen && (
-        <form action={confirmFormAction} className="card space-y-4 p-5">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            2 · Seus dados
-          </h2>
-          <p className="alert-info">
-            {formatDateBr(selectedDate)} às {chosen.label}
-          </p>
+      <form action={confirmFormAction} className="space-y-6">
+        <input type="hidden" name="slug" value={slug} />
+        <input type="hidden" name="serviceId" value={serviceId} />
+        <input type="hidden" name="startAt" value={chosen?.iso ?? ""} />
 
-          <input type="hidden" name="slug" value={slug} />
-          <input type="hidden" name="serviceId" value={serviceId} />
-          <input type="hidden" name="startAt" value={chosen.iso} />
-
-          <div>
-            <label htmlFor="customerName" className="field-label">
+        {/* PASSO 2 — telefone */}
+        <section>
+          <StepHeader n={2} title="Seu telefone" />
+          <div className={cardClass}>
+            <label
+              htmlFor="customerName"
+              className="mb-2 block text-[13px] font-semibold text-[#574a54]"
+            >
               Seu nome
             </label>
             <input
@@ -118,70 +205,131 @@ export function BookingForm({
               name="customerName"
               placeholder="Maria da Silva"
               required
-              className="input"
+              className="mb-3.5 w-full rounded-[14px] border-[1.5px] border-[#ecdfeb] bg-[#faf6fb] px-4 py-3.5 text-base font-medium text-[#2c1f29] placeholder:font-normal placeholder:text-[#b6a7bd] focus:border-[#ec4899] focus:outline-none focus:ring-4 focus:ring-[#ec4899]/12"
             />
-          </div>
 
-          <div>
-            <label htmlFor="phone" className="field-label">
-              Telefone (WhatsApp)
+            <label
+              htmlFor="phone"
+              className="mb-2 block text-[13px] font-semibold text-[#574a54]"
+            >
+              Número com DDD
             </label>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              inputMode="tel"
-              placeholder="(11) 99999-8888"
-              required
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-              className="input"
-            />
-          </div>
+            <div className="mb-3.5 flex items-center gap-2.5 rounded-[14px] border-[1.5px] border-[#ecdfeb] bg-[#faf6fb] px-4 py-1 focus-within:border-[#ec4899] focus-within:ring-4 focus-within:ring-[#ec4899]/12">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#b09cb6"
+                strokeWidth="2"
+                aria-hidden
+              >
+                <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" />
+              </svg>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                inputMode="tel"
+                placeholder="(11) 95555-0184"
+                required
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                className="w-full bg-transparent py-2.5 text-base font-semibold text-[#2c1f29] placeholder:font-normal placeholder:text-[#b6a7bd] focus:outline-none"
+              />
+            </div>
 
-          <button
-            type="button"
-            disabled={sending || phone.replace(/\D/g, "").length < 10}
-            onClick={() => {
-              const form = new FormData();
-              form.set("slug", slug);
-              form.set("phone", phone);
-              sendAction(form);
-            }}
-            className="btn-secondary w-full"
-          >
-            {sending ? "Enviando..." : "Receber código por telefone"}
-          </button>
-          {sendState?.error && <p className="alert-error">{sendState.error}</p>}
-          {sendState?.sent && (
-            <p className="alert-success">
-              Código enviado! Confira seu telefone e digite abaixo.
+            <button
+              type="button"
+              disabled={sending || !phoneReady || cooldown > 0}
+              onClick={requestCode}
+              className="btn-primary w-full"
+            >
+              {sending ? "Enviando..." : "Enviar código"}
+            </button>
+
+            {sendState?.error && (
+              <p className="alert-error mt-3">{sendState.error}</p>
+            )}
+            {sendState?.sent ? (
+              <p className="mt-3 text-center text-[12.5px] leading-snug text-emerald-600">
+                Código enviado! Confira seu SMS ou WhatsApp.
+              </p>
+            ) : (
+              <p className="mt-3 text-center text-[12.5px] leading-snug text-[#a394aa]">
+                Enviaremos um código por SMS ou WhatsApp para confirmar seu
+                agendamento.
+              </p>
+            )}
+          </div>
+        </section>
+
+        {/* PASSO 3 — código */}
+        <section>
+          <StepHeader n={3} title="Confirme o código" />
+          <div className={cardClass}>
+            <p className="mb-3.5 text-[13.5px] leading-normal text-[#574a54]">
+              Digite o código de 6 dígitos enviado para o seu telefone.
             </p>
-          )}
 
-          <div>
-            <label htmlFor="code" className="field-label">
-              Código de confirmação
-            </label>
-            <input
-              id="code"
-              name="code"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              placeholder="000000"
-              required
-              className="input"
-            />
+            <div className="mb-3.5">
+              <OtpInput invalid={Boolean(confirmState?.error)} />
+            </div>
+
+            {confirmState?.error && (
+              <div className="mb-4 flex items-start gap-2.5 rounded-[13px] border border-[#f6cdd2] bg-[#fef2f3] px-3.5 py-3">
+                <svg
+                  width="17"
+                  height="17"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#dc2626"
+                  strokeWidth="2"
+                  className="mt-0.5 shrink-0"
+                  aria-hidden
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 8v4M12 16h.01" />
+                </svg>
+                <span className="text-[13px] font-medium leading-snug text-[#b91c1c]">
+                  {confirmState.error}
+                </span>
+              </div>
+            )}
+
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-[13px] text-[#a394aa]">Não recebeu?</span>
+              {cooldown > 0 ? (
+                <span className="text-[13px] font-semibold text-[#c3b6c8]">
+                  Reenviar em {cooldownLabel}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  disabled={sending || !phoneReady}
+                  onClick={requestCode}
+                  className="text-[13px] font-bold text-[#be185d] disabled:opacity-50"
+                >
+                  Reenviar código
+                </button>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={confirming || !chosen}
+              className="btn-primary w-full"
+            >
+              {confirming ? "Confirmando..." : "Confirmar agendamento"}
+            </button>
+            {!chosen && (
+              <p className="mt-2.5 text-center text-[12.5px] text-[#a394aa]">
+                Escolha um horário no passo 1 para confirmar.
+              </p>
+            )}
           </div>
-
-          {confirmState?.error && (
-            <p className="alert-error">{confirmState.error}</p>
-          )}
-          <button type="submit" disabled={confirming} className="btn-primary w-full">
-            {confirming ? "Confirmando..." : "Confirmar agendamento"}
-          </button>
-        </form>
-      )}
+        </section>
+      </form>
     </div>
   );
 }

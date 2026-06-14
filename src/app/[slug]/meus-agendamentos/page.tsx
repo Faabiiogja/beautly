@@ -1,4 +1,5 @@
 import { verifiedPhoneFor } from "@/lib/client-session";
+import { formatPhone } from "@/lib/phone";
 import { todayLocalDateStr } from "@/lib/timezone";
 import { findBusinessBySlug } from "@/repositories/business-repository";
 import { availableSlots } from "@/services/availability-service";
@@ -22,22 +23,41 @@ export default async function MyAppointmentsPage({
   const phone = await verifiedPhoneFor(business.id);
 
   return (
-    <main className="mx-auto w-full max-w-md flex-1 px-6 py-10">
-      <Link
-        href={`/${slug}`}
-        className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-brand-700"
-      >
-        ← Voltar para {business.name}
-      </Link>
-      <h1 className="font-display mb-6 text-2xl font-semibold text-zinc-900">
-        Meus agendamentos
-      </h1>
+    <main className="mx-auto w-full max-w-md flex-1 px-4 py-6">
+      <div className="overflow-hidden rounded-[32px] bg-[#faf8fb] shadow-[0_30px_60px_-30px_rgba(157,23,77,0.35)] ring-1 ring-black/5">
+        <div className="border-b border-[#f1ebf2] bg-white px-5 py-3.5">
+          <Link
+            href={`/${slug}`}
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#9b6aa0]"
+          >
+            ← Voltar
+          </Link>
+          {phone && (
+            <div className="mt-2">
+              <p className="font-display text-[22px] font-semibold text-[#2c1f29]">
+                Meus agendamentos
+              </p>
+              <p className="mt-0.5 text-[13px] font-medium text-[#9b8a98]">
+                {formatPhone(phone)}
+              </p>
+            </div>
+          )}
+        </div>
 
-      {phone ? (
-        <AuthedList slug={slug} businessId={business.id} phone={phone} timezone={business.timezone} searchParams={searchParams} />
-      ) : (
-        <AccessForm slug={slug} />
-      )}
+        <div className="px-5 pb-7 pt-5">
+          {phone ? (
+            <AuthedList
+              slug={slug}
+              businessId={business.id}
+              phone={phone}
+              timezone={business.timezone}
+              searchParams={searchParams}
+            />
+          ) : (
+            <AccessForm slug={slug} />
+          )}
+        </div>
+      </div>
     </main>
   );
 }

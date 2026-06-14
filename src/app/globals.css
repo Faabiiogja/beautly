@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* Nunito só para os dígitos — overrides por peso na faixa 0-9, para que todo
+   número renderize em Nunito sem marcação por elemento (Poppins/Inter no resto). */
+@font-face{font-family:'Poppins';font-style:normal;font-weight:400;font-display:swap;src:url(https://cdn.jsdelivr.net/fontsource/fonts/nunito@latest/latin-400-normal.woff2) format('woff2');unicode-range:U+0030-0039;}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:500;font-display:swap;src:url(https://cdn.jsdelivr.net/fontsource/fonts/nunito@latest/latin-500-normal.woff2) format('woff2');unicode-range:U+0030-0039;}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:600;font-display:swap;src:url(https://cdn.jsdelivr.net/fontsource/fonts/nunito@latest/latin-600-normal.woff2) format('woff2');unicode-range:U+0030-0039;}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:700;font-display:swap;src:url(https://cdn.jsdelivr.net/fontsource/fonts/nunito@latest/latin-700-normal.woff2) format('woff2');unicode-range:U+0030-0039;}
+@font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url(https://cdn.jsdelivr.net/fontsource/fonts/nunito@latest/latin-400-normal.woff2) format('woff2');unicode-range:U+0030-0039;}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url(https://cdn.jsdelivr.net/fontsource/fonts/nunito@latest/latin-500-normal.woff2) format('woff2');unicode-range:U+0030-0039;}
+@font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url(https://cdn.jsdelivr.net/fontsource/fonts/nunito@latest/latin-600-normal.woff2) format('woff2');unicode-range:U+0030-0039;}
+@font-face{font-family:'Inter';font-style:normal;font-weight:700;font-display:swap;src:url(https://cdn.jsdelivr.net/fontsource/fonts/nunito@latest/latin-700-normal.woff2) format('woff2');unicode-range:U+0030-0039;}
+
 @theme {
   /* Rosa (primária) */
   --color-brand-50: #fcf6fa;
@@ -30,8 +41,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
@@ -54,8 +65,8 @@ body {
   /* Botões */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold text-white transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-50;
-    background-image: linear-gradient(90deg, #ec6fa6, #b79ced);
-    box-shadow: 0 10px 24px -8px rgba(183, 156, 237, 0.6);
+    background-image: linear-gradient(135deg, #ec4899, #a855f7);
+    box-shadow: 0 12px 24px -10px rgba(236, 72, 153, 0.6);
   }
   .btn-primary:hover:not(:disabled) {
     transform: translateY(-2px);
@@ -93,7 +104,18 @@ body {
   }
 
   .chip-selected {
-    @apply border-lilac-600 bg-lilac-600 text-white hover:border-lilac-600 hover:text-white;
+    @apply border-transparent text-white hover:text-white;
+    background-image: linear-gradient(135deg, #ec4899, #a855f7);
+    box-shadow: 0 8px 16px -8px rgba(236, 72, 153, 0.6);
+  }
+
+  /* Gradiente de marca rosa → lilás (botões, selos de passo, destaques). */
+  .gradient-brand {
+    background-image: linear-gradient(135deg, #ec4899, #a855f7);
+  }
+  /* Cabeçalho rico da página pública. */
+  .gradient-header {
+    background-image: linear-gradient(150deg, #ec4899 0%, #d6409f 45%, #a78bfa 110%);
   }
 
   /* Badges e alertas */

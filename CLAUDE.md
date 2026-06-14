@@ -77,7 +77,10 @@ script tsx (ver histórico) ou use uma conexão direta.
   técnicas (evitar jargão).
 - Estilo: Tailwind v4 com tokens em `globals.css` (`--color-brand-*`) e classes
   componentizadas (`.card`, `.btn-primary`, `.input`, `.chip`, `.badge`,
-  `.alert-*`). Fontes: DM Sans (texto) e Fraunces (display) via `next/font`.
+  `.alert-*`). Fontes: Inter (texto/interface) e Poppins (títulos/display, via
+  token `--font-display`), com Nunito aplicada só aos dígitos (override de
+  `unicode-range` em `globals.css`). Carregadas por `<link>` Google Fonts no
+  root layout (não `next/font`, por causa do truque dos dígitos).
 - Preços são **inteiros em reais** (sem centavos): exibir como `R$ 30`.
 - Datas em UTC no banco; renderizar com `formatInTimeZone` no timezone do
   negócio (`America/Sao_Paulo` default). Helpers em `src/lib/timezone.ts`.

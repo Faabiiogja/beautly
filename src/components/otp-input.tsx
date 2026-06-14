@@ -6,9 +6,11 @@ interface Props {
   /** Nome do input oculto enviado no form (mantém `code`). */
   name?: string;
   length?: number;
+  /** Pinta as casas em vermelho (código incorreto/expirado). */
+  invalid?: boolean;
 }
 
-export function OtpInput({ name = "code", length = 6 }: Props) {
+export function OtpInput({ name = "code", length = 6, invalid = false }: Props) {
   const [digits, setDigits] = useState<string[]>(Array(length).fill(""));
   const refs = useRef<(HTMLInputElement | null)[]>([]);
   const value = digits.join("");
@@ -52,6 +54,12 @@ export function OtpInput({ name = "code", length = 6 }: Props) {
     refs.current[Math.min(pasted.length, length - 1)]?.focus();
   }
 
+  const cellBase =
+    "flex-1 aspect-square rounded-[13px] text-center font-display text-[22px] font-semibold focus:outline-none";
+  const cellTone = invalid
+    ? "border-[1.5px] border-[#f4b8bf] bg-[#fef2f3] text-[#dc2626]"
+    : "border-[1.5px] border-[#ecdfeb] bg-[#faf6fb] text-[#2c1f29] focus:border-2 focus:border-[#ec4899] focus:bg-white focus:ring-4 focus:ring-[#ec4899]/15";
+
   return (
     <div>
       <input type="hidden" name={name} value={value} />
@@ -69,7 +77,8 @@ export function OtpInput({ name = "code", length = 6 }: Props) {
             autoComplete={index === 0 ? "one-time-code" : "off"}
             maxLength={1}
             aria-label={`Dígito ${index + 1} do código`}
-            className="h-14 w-full rounded-2xl border border-brand-200 bg-white text-center text-xl font-semibold text-ink-900 focus:border-brand-400 focus:outline-none focus:ring-4 focus:ring-brand-100"
+            aria-invalid={invalid}
+            className={`${cellBase} ${cellTone}`}
           />
         ))}
       </div>

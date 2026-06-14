@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { formatPhone, whatsappLink } from "@/lib/phone";
 import { findBusinessBySlug } from "@/repositories/business-repository";
 import { formatInTimeZone } from "date-fns-tz";
+import { ptBR } from "date-fns/locale";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -26,66 +27,90 @@ export default async function ConfirmadoPage({
   const when = formatInTimeZone(
     new Date(startAt),
     business.timezone,
-    "dd/MM/yyyy 'às' HH:mm",
+    "EEE, d 'de' MMM '·' HH:mm",
+    { locale: ptBR },
   );
 
   return (
-    <main className="mx-auto w-full max-w-md flex-1 px-6 py-12">
-      <div className="card text-center">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
-          <svg
-            className="h-7 w-7 text-emerald-600"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden
-          >
-            <path
-              fillRule="evenodd"
-              d="M16.7 5.3a1 1 0 0 1 0 1.4l-7.5 7.5a1 1 0 0 1-1.4 0L3.3 9.7a1 1 0 1 1 1.4-1.4l3.8 3.79 6.8-6.8a1 1 0 0 1 1.4 0Z"
-              clipRule="evenodd"
-            />
-          </svg>
+    <main className="mx-auto w-full max-w-md flex-1 px-4 py-6">
+      <div className="overflow-hidden rounded-[32px] bg-white px-6 pb-8 pt-10 text-center shadow-[0_30px_60px_-30px_rgba(157,23,77,0.35)] ring-1 ring-black/5">
+        <span
+          className="mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full shadow-[0_14px_30px_-12px_rgba(22,163,74,0.5)]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 50% 40%, #d6f5e3, #bdeccf)",
+          }}
+        >
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#22c55e] to-[#16a34a]">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#fff"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M5 12.5l4.5 4.5L19 7" />
+            </svg>
+          </span>
         </span>
-        <h1 className="font-display mt-4 text-2xl font-semibold text-zinc-900">
+
+        <h1 className="font-display text-[25px] font-semibold leading-snug text-[#2c1f29]">
           Agendamento confirmado!
         </h1>
+        <p className="mx-auto mt-2.5 mb-7 max-w-xs text-[14.5px] leading-relaxed text-[#8a7f94]">
+          Te esperamos no {business.name}. Você também receberá os detalhes por
+          WhatsApp.
+        </p>
 
-        <dl className="mt-6 space-y-3 rounded-xl bg-zinc-50 p-4 text-left text-sm">
-          <div className="flex justify-between gap-3">
-            <dt className="text-zinc-500">Serviço</dt>
-            <dd className="font-medium text-zinc-900">{service.name}</dd>
+        <dl className="mb-6 rounded-[22px] border border-[#f0e6ee] bg-[#faf6fb] px-[18px] py-1.5 text-left">
+          <div className="flex items-center justify-between border-b border-[#f0e6ee] py-[15px]">
+            <dt className="text-[13.5px] font-medium text-[#9b8a98]">Serviço</dt>
+            <dd className="text-[14.5px] font-semibold text-[#2c1f29]">
+              {service.name}
+            </dd>
           </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-zinc-500">Data e hora</dt>
-            <dd className="font-medium text-zinc-900">{when}</dd>
+          <div className="flex items-center justify-between border-b border-[#f0e6ee] py-[15px]">
+            <dt className="text-[13.5px] font-medium text-[#9b8a98]">
+              Data e hora
+            </dt>
+            <dd className="text-[14.5px] font-semibold capitalize text-[#2c1f29]">
+              {when}
+            </dd>
           </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-zinc-500">Valor</dt>
-            <dd className="font-medium text-zinc-900">R$ {service.price}</dd>
-          </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-zinc-500">Profissional</dt>
-            <dd className="font-medium text-zinc-900">{business.name}</dd>
+          <div className="flex items-center justify-between py-[15px]">
+            <dt className="text-[13.5px] font-medium text-[#9b8a98]">Valor</dt>
+            <dd className="font-display text-lg font-semibold text-[#be185d]">
+              R$ {service.price}
+            </dd>
           </div>
         </dl>
 
         {business.defaultMessage && (
-          <p className="alert-info mt-4 text-left">{business.defaultMessage}</p>
+          <p className="alert-info mb-6 text-left">{business.defaultMessage}</p>
         )}
 
-        <div className="mt-6 space-y-3">
-          <Link href={`/${slug}/meus-agendamentos`} className="btn-primary w-full">
-            Ver meus agendamentos
-          </Link>
-          <a
-            href={whatsappLink(business.contactPhone)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-secondary w-full"
-          >
-            Falar com {business.name} · {formatPhone(business.contactPhone)}
-          </a>
-        </div>
+        <a
+          href={whatsappLink(business.contactPhone)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-3.5 flex w-full items-center justify-center gap-2.5 rounded-[15px] py-3.5 text-[15.5px] font-semibold text-white shadow-[0_12px_24px_-10px_rgba(37,211,102,0.6)]"
+          style={{ backgroundImage: "linear-gradient(135deg,#25d366,#1eb955)" }}
+        >
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <path d="M12 2a10 10 0 0 0-8.7 14.9L2 22l5.3-1.4A10 10 0 1 0 12 2Zm5.5 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.1-4.7-4-4.8-4.2-.1-.2-1.1-1.5-1.1-2.8s.7-1.9.9-2.2c.2-.2.5-.3.6-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.5c-.1.2-.3.3-.1.6.1.3.7 1.1 1.4 1.7.9.8 1.6 1 1.9 1.2.2.1.4.1.5-.1l.6-.7c.2-.2.3-.2.6-.1l1.8.9c.3.1.5.2.5.4.1.2.1.9-.1 1.5Z" />
+          </svg>
+          Falar no WhatsApp · {formatPhone(business.contactPhone)}
+        </a>
+        <Link
+          href={`/${slug}/meus-agendamentos`}
+          className="block text-sm font-semibold text-[#9b6aa0]"
+        >
+          Ver meus agendamentos →
+        </Link>
       </div>
     </main>
   );
