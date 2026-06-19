@@ -79,7 +79,7 @@ export function BusinessForm({ defaults }: Props) {
             step={5}
             className="input"
           />
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-ink-500">
             Define de quanto em quanto tempo os horários são oferecidos (ex:
             30 = 09:00, 09:30, 10:00...).
           </p>
@@ -97,9 +97,7 @@ export function BusinessForm({ defaults }: Props) {
         encType="multipart/form-data"
         className="card space-y-4 p-5"
       >
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Logotipo
-        </h2>
+        <h2 className="section-label">Logotipo</h2>
         <div className="flex items-center gap-4">
           {defaults.logoUrl ? (
             <Image
@@ -107,7 +105,7 @@ export function BusinessForm({ defaults }: Props) {
               alt="Logotipo atual"
               width={80}
               height={80}
-              className="h-20 w-20 rounded-full border border-zinc-200 object-cover"
+              className="h-20 w-20 rounded-full border border-cream-200 object-cover"
             />
           ) : (
             <span className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-100 font-display text-2xl font-semibold text-brand-700">
@@ -124,7 +122,7 @@ export function BusinessForm({ defaults }: Props) {
               type="file"
               accept="image/png,image/jpeg,image/webp"
               required
-              className="block w-full text-sm text-zinc-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100"
+              className="block w-full text-sm text-ink-500 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-brand-700 hover:file:bg-brand-100"
             />
           </div>
         </div>

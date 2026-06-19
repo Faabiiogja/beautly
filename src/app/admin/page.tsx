@@ -1,9 +1,9 @@
+import { CopyLink } from "@/app/admin/copy-link";
 import { requireProfessional } from "@/lib/auth-guard";
 import { todayLocalDateStr } from "@/lib/timezone";
 import { listAppointmentsByDay } from "@/services/agenda-service";
 import { businessReadiness, getBusiness } from "@/services/business-service";
 import Link from "next/link";
-import { CopyLink } from "./copy-link";
 
 const checklist: {
   key: "active" | "hasContact" | "hasActiveService" | "hasOpenDay";
@@ -29,53 +29,56 @@ export default async function AdminHome() {
 
   return (
     <main>
-      <h1 className="font-display text-2xl font-semibold text-zinc-900">
-        Olá, {business.name}
-      </h1>
+      <h1 className="page-title">Olá, {business.name}</h1>
 
       {readiness.ready ? (
-        <div className="card mt-6 flex flex-wrap items-center justify-between gap-3 border-brand-200 bg-brand-50/50 p-4">
-          <div>
-            <p className="font-medium text-zinc-900">
+        <div className="card mt-6 flex flex-wrap items-center justify-between gap-3 border-brand-200 bg-gradient-to-br from-brand-50 to-lilac-50 p-5">
+          <div className="min-w-0">
+            <p className="font-display text-base font-semibold text-ink-900">
               Sua página está no ar ✨
             </p>
-            <p className="mt-0.5 text-sm text-zinc-600">
+            <p className="mt-0.5 text-sm text-ink-500">
               Divulgue o link para suas clientes agendarem sozinhas.
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <code className="rounded-lg bg-white px-2 py-1 text-xs text-brand-700">
+            <code className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-brand-700 ring-1 ring-brand-200">
               /{business.slug}
             </code>
             <CopyLink path={`/${business.slug}`} />
           </div>
         </div>
       ) : (
-        <div className="card mt-6 border-amber-200 bg-amber-50/60 p-4">
-          <p className="font-medium text-zinc-900">
+        <div className="card mt-6 border-lilac-200 bg-gradient-to-br from-lilac-50 to-brand-50 p-5">
+          <p className="font-display text-base font-semibold text-ink-900">
             Sua página ainda não está pronta
           </p>
-          <p className="mt-0.5 text-sm text-zinc-600">
+          <p className="mt-0.5 text-sm text-ink-500">
             Complete os passos abaixo para começar a receber agendamentos:
           </p>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-4 space-y-2.5">
             {checklist.map((item) => {
               const done = readiness[item.key];
               return (
-                <li key={item.key} className="flex items-center gap-2 text-sm">
+                <li key={item.key} className="flex items-center gap-2.5 text-sm">
                   <span
-                    className={`flex h-5 w-5 items-center justify-center rounded-full text-xs ${
+                    className={`flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold ${
                       done
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-zinc-200 text-zinc-500"
+                        ? "bg-success-100 text-success-700"
+                        : "bg-cream-200 text-ink-500"
                     }`}
                   >
                     {done ? "✓" : "•"}
                   </span>
                   {done ? (
-                    <span className="text-zinc-500 line-through">{item.label}</span>
+                    <span className="text-ink-500 line-through">
+                      {item.label}
+                    </span>
                   ) : (
-                    <Link href={item.href} className="text-brand-700 hover:underline">
+                    <Link
+                      href={item.href}
+                      className="font-medium text-brand-700 hover:underline"
+                    >
                       {item.label}
                     </Link>
                   )}
@@ -88,19 +91,20 @@ export default async function AdminHome() {
 
       <section className="mt-8">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            Hoje
-          </h2>
-          <Link href="/admin/agenda" className="text-sm text-brand-700 hover:underline">
+          <h2 className="section-label">Hoje</h2>
+          <Link
+            href="/admin/agenda"
+            className="text-sm font-medium text-brand-700 hover:underline"
+          >
             Ver agenda completa
           </Link>
         </div>
         {todayAppointments.length === 0 ? (
           <p className="alert-info mt-3">Nenhum atendimento marcado para hoje.</p>
         ) : (
-          <p className="card mt-3 p-4 text-sm text-zinc-700">
+          <p className="card mt-3 p-4 text-sm text-ink-700">
             Você tem{" "}
-            <strong className="text-brand-700">
+            <strong className="font-display text-brand-700">
               {todayAppointments.length}
             </strong>{" "}
             atendimento{todayAppointments.length > 1 ? "s" : ""} hoje.
@@ -109,30 +113,41 @@ export default async function AdminHome() {
       </section>
 
       <section className="mt-8 grid gap-3 sm:grid-cols-2">
-        <Link href="/admin/agenda" className="card p-4 transition hover:border-brand-300">
-          <p className="font-medium text-zinc-900">Agenda</p>
-          <p className="mt-1 text-sm text-zinc-500">
-            Veja os atendimentos por dia e feche dias de folga.
-          </p>
-        </Link>
-        <Link href="/admin/services" className="card p-4 transition hover:border-brand-300">
-          <p className="font-medium text-zinc-900">Serviços</p>
-          <p className="mt-1 text-sm text-zinc-500">
-            Cadastre serviços com preço e duração.
-          </p>
-        </Link>
-        <Link href="/admin/business/hours" className="card p-4 transition hover:border-brand-300">
-          <p className="font-medium text-zinc-900">Horários</p>
-          <p className="mt-1 text-sm text-zinc-500">
-            Defina os dias e horários em que você atende.
-          </p>
-        </Link>
-        <Link href="/admin/business" className="card p-4 transition hover:border-brand-300">
-          <p className="font-medium text-zinc-900">Dados do negócio</p>
-          <p className="mt-1 text-sm text-zinc-500">
-            Nome, telefone, mensagem padrão e logotipo.
-          </p>
-        </Link>
+        {[
+          {
+            href: "/admin/agenda",
+            title: "Agenda",
+            desc: "Veja os atendimentos por dia e feche dias de folga.",
+          },
+          {
+            href: "/admin/services",
+            title: "Serviços",
+            desc: "Cadastre serviços com preço e duração.",
+          },
+          {
+            href: "/admin/business/hours",
+            title: "Horários",
+            desc: "Defina os dias e horários em que você atende.",
+          },
+          {
+            href: "/admin/business",
+            title: "Dados do negócio",
+            desc: "Nome, telefone, mensagem padrão e logotipo.",
+          },
+        ].map((card) => (
+          <Link
+            key={card.href}
+            href={card.href}
+            className="card p-5 transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-glow"
+          >
+            <p className="font-display text-base font-semibold text-ink-900">
+              {card.title}
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-ink-500">
+              {card.desc}
+            </p>
+          </Link>
+        ))}
       </section>
     </main>
   );

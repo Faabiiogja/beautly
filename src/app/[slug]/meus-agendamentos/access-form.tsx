@@ -1,6 +1,7 @@
 "use client";
 
 import { OtpInput } from "@/components/otp-input";
+import { PhoneField } from "@/components/phone-field";
 import { useActionState, useState } from "react";
 import {
   requestAccessAction,
@@ -23,60 +24,43 @@ export function AccessForm({ slug }: { slug: string }) {
   const phoneReady = phone.replace(/\D/g, "").length >= 10;
 
   return (
-    <form className="rounded-[22px] border border-[#f0e6ee] bg-white p-5 shadow-[0_4px_14px_-8px_rgba(157,23,77,0.16)]">
+    <form className="surface p-5">
       <input type="hidden" name="slug" value={slug} />
 
       <div className="mb-6 text-center">
-        <span className="mx-auto mb-4 flex h-15 w-15 items-center justify-center rounded-[18px] border border-[#f4dcee] bg-gradient-to-br from-[#fdeef7] to-[#f3ecfb]">
+        <span className="mx-auto mb-4 flex h-15 w-15 items-center justify-center rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 to-lilac-50 text-brand-700">
           <svg
-            width="28"
-            height="28"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#be185d"
+            stroke="currentColor"
             strokeWidth="2"
+            className="h-7 w-7"
             aria-hidden
           >
             <rect x="4" y="10" width="16" height="11" rx="2.5" />
             <path d="M8 10V7a4 4 0 0 1 8 0v3" />
           </svg>
         </span>
-        <p className="font-display text-[21px] font-semibold text-[#2c1f29]">
+        <p className="font-display text-[21px] font-semibold text-ink-900">
           Acesse seus agendamentos
         </p>
-        <p className="mt-2 text-sm leading-normal text-[#8a7f94]">
+        <p className="mt-2 text-sm leading-normal text-ink-500">
           Confirme seu telefone para ver e gerenciar seus horários.
         </p>
       </div>
 
       <label
         htmlFor="access-phone"
-        className="mb-2 block text-[13px] font-semibold text-[#574a54]"
+        className="mb-2 block text-[13px] font-semibold text-ink-700"
       >
         Número com DDD
       </label>
-      <div className="mb-3.5 flex items-center gap-2.5 rounded-[14px] border-[1.5px] border-[#ecdfeb] bg-[#faf6fb] px-4 py-1 focus-within:border-[#ec4899] focus-within:ring-4 focus-within:ring-[#ec4899]/12">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#b09cb6"
-          strokeWidth="2"
-          aria-hidden
-        >
-          <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" />
-        </svg>
-        <input
+      <div className="mb-3.5">
+        <PhoneField
           id="access-phone"
-          name="phone"
-          type="tel"
-          inputMode="tel"
           placeholder="(11) 90000-0000"
-          required
           value={phone}
-          onChange={(event) => setPhone(event.target.value)}
-          className="w-full bg-transparent py-2.5 text-base font-medium text-[#2c1f29] placeholder:font-normal placeholder:text-[#b6a7bd] focus:outline-none"
+          onChange={setPhone}
         />
       </div>
 
@@ -90,13 +74,13 @@ export function AccessForm({ slug }: { slug: string }) {
       {reqState?.error && <p className="alert-error mt-3">{reqState.error}</p>}
 
       {sent && (
-        <p className="mt-3 text-center text-[12.5px] leading-snug text-emerald-600">
+        <p className="mt-3 text-center text-[12.5px] leading-snug text-success-700">
           Código enviado! Confira seu SMS ou WhatsApp e digite abaixo.
         </p>
       )}
 
       <div className="mt-5">
-        <label className="mb-2 block text-[13px] font-semibold text-[#574a54]">
+        <label className="mb-2 block text-[13px] font-semibold text-ink-700">
           Código recebido
         </label>
         <OtpInput name="code" invalid={Boolean(verState?.error)} />
@@ -111,7 +95,7 @@ export function AccessForm({ slug }: { slug: string }) {
       </button>
       {verState?.error && <p className="alert-error mt-3">{verState.error}</p>}
 
-      <p className="mt-3.5 text-center text-[12.5px] leading-snug text-[#a394aa]">
+      <p className="mt-3.5 text-center text-[12.5px] leading-snug text-ink-500">
         Usamos o código só para confirmar que o número é seu.
       </p>
     </form>

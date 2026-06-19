@@ -44,6 +44,23 @@
   --color-cream-100: #f9f2ea;
   --color-cream-200: #f1e6d8;
   --color-cream-300: #e6d5c2;
+
+  /* Sucesso / perigo / alerta — alinhados com a paleta rosa+lilás da LP.
+     Mantemos verde/esmeralda e vermelho p/ semântica universal, e um lilás
+     suave p/ "atenção/pendente" que combina melhor que amber no contexto. */
+  --color-success-50: #ecfdf3;
+  --color-success-100: #d1fadf;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+
+  --color-danger-50: #fef2f3;
+  --color-danger-100: #fee4e6;
+  --color-danger-200: #f6cdd2;
+  --color-danger-600: #dc2626;
+  --color-danger-700: #b91c1c;
+
+  --color-whatsapp: #25d366;
+  --color-whatsapp-dark: #1eb955;
 }
 
 @theme inline {
@@ -53,7 +70,7 @@
 }
 
 body {
-  background-color: var(--color-brand-50);
+  background-color: var(--color-cream-50);
   color: var(--color-ink-900);
   font-family: var(--font-sans);
 }
@@ -61,12 +78,28 @@ body {
 @layer components {
   /* Superfícies */
   .card {
-    @apply rounded-3xl border border-brand-100 bg-white p-6;
+    @apply rounded-3xl border border-cream-200 bg-white p-6;
     box-shadow: 0 12px 32px -16px rgba(183, 156, 237, 0.45);
+  }
+
+  /* Mini-card interno (densidade menor) — painéis dentro de cards/page-shell,
+     resumo de serviço, dl de confirmação, etc. */
+  .surface {
+    @apply rounded-2xl border border-cream-200 bg-white p-4;
+    box-shadow: 0 4px 14px -8px rgba(157, 23, 77, 0.18);
+  }
+
+  /* Variante de surface com fundo creme (áreas internas, painéis de
+     remarcação, etc.). */
+  .surface-muted {
+    @apply rounded-2xl border border-cream-200 bg-cream-50 p-4;
   }
 
   .shadow-glow {
     box-shadow: 0 12px 32px -16px rgba(183, 156, 237, 0.45);
+  }
+  .shadow-glow-strong {
+    box-shadow: 0 30px 60px -30px rgba(157, 23, 77, 0.35);
   }
 
   /* Botões */
@@ -92,9 +125,36 @@ body {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-ink-700 transition hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
+  /* Botão de perigo (cancelar/deletar) — usado isolado em painéis de
+     confirmação inline. */
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-danger-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-danger-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger-600 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Botão WhatsApp — gradiente verde característico, mantém a linguagem
+     arredondada/glow do resto da UI. */
+  .btn-whatsapp {
+    @apply inline-flex items-center justify-center gap-2.5 rounded-2xl px-5 py-3.5 text-sm font-semibold text-white transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success-600 disabled:cursor-not-allowed disabled:opacity-50;
+    background-image: linear-gradient(135deg, #25d366, #1eb955);
+    box-shadow: 0 12px 24px -10px rgba(37, 211, 102, 0.6);
+  }
+  .btn-whatsapp:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 30px -8px rgba(37, 211, 102, 0.7);
+  }
+
   /* Formulário */
   .input {
     @apply w-full rounded-2xl border border-brand-200 bg-white px-4 py-3 text-sm text-ink-900 placeholder:text-ink-500 focus:border-brand-400 focus:outline-none focus:ring-4 focus:ring-brand-100;
+  }
+
+  /* Campo de telefone com prefixo de ícone — wrapper que envolve o ícone e o
+     <input>. Replicava-se em booking-form e access-form. */
+  .phone-field {
+    @apply flex items-center gap-2.5 rounded-2xl border-[1.5px] border-brand-200 bg-white px-4 py-1 transition focus-within:border-brand-500 focus-within:ring-4 focus-within:ring-brand-100;
+  }
+  .phone-field input {
+    @apply w-full bg-transparent py-2.5 text-base font-semibold text-ink-900 placeholder:font-normal placeholder:text-ink-500 focus:outline-none;
   }
 
   .field-label {
@@ -103,6 +163,16 @@ body {
 
   .section-label {
     @apply text-xs font-semibold uppercase tracking-[0.12em] text-ink-500;
+  }
+
+  /* Título de página (admin/platform) — equivalente visual ao "h2" da LP. */
+  .page-title {
+    @apply font-display text-2xl font-semibold tracking-tight text-ink-900 sm:text-3xl;
+  }
+
+  /* Link "← Voltar" discreto, usado nos headers internos das páginas. */
+  .link-back {
+    @apply inline-flex items-center gap-1.5 text-sm font-semibold text-lilac-600 transition hover:text-brand-700;
   }
 
   /* Chips de horário */
@@ -129,17 +199,37 @@ body {
   .badge {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
   }
+  .badge-success {
+    @apply bg-success-100 text-success-700;
+  }
+  .badge-danger {
+    @apply bg-danger-100 text-danger-700;
+  }
+  .badge-muted {
+    @apply bg-cream-100 text-ink-500;
+  }
+  .badge-brand {
+    @apply bg-brand-100 text-brand-700;
+  }
+  .badge-lilac {
+    @apply bg-lilac-100 text-lilac-700;
+  }
 
   .alert-error {
-    @apply rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700;
+    @apply rounded-2xl bg-danger-50 px-4 py-3 text-sm text-danger-700;
   }
 
   .alert-success {
-    @apply rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700;
+    @apply rounded-2xl bg-success-50 px-4 py-3 text-sm text-success-700;
   }
 
   .alert-info {
     @apply rounded-2xl bg-brand-50 px-4 py-3 text-sm text-brand-900;
+  }
+
+  /* Atenção/pendente — usamos lilás (paleta da marca) em vez de amber. */
+  .alert-warning {
+    @apply rounded-2xl bg-lilac-50 px-4 py-3 text-sm text-lilac-700;
   }
 
   /* Loading */

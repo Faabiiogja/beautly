@@ -15,15 +15,10 @@ export default function NewProfessionalPage() {
 
   return (
     <main className="mx-auto max-w-md">
-      <Link
-        href="/platform"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-brand-700"
-      >
-        ← Voltar
+      <Link href="/platform" className="link-back mb-4">
+        <span aria-hidden>←</span> Voltar
       </Link>
-      <h1 className="font-display text-2xl font-semibold text-zinc-900">
-        Nova profissional
-      </h1>
+      <h1 className="page-title">Nova profissional</h1>
       <form action={action} className="card mt-6 space-y-4 p-5">
         <div>
           <label htmlFor="businessName" className="field-label">
@@ -42,7 +37,7 @@ export default function NewProfessionalPage() {
             Endereço da página
           </label>
           <div className="flex items-center gap-1">
-            <span className="text-sm text-zinc-400">beautly.com/</span>
+            <span className="text-sm text-ink-500">beautly.com/</span>
             <input
               id="slug"
               name="slug"
@@ -92,12 +87,12 @@ export default function NewProfessionalPage() {
             required
             className="input"
           />
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-ink-500">
             Mínimo de 8 caracteres, evite senhas óbvias. Combine com a
             profissional a troca no primeiro acesso.
           </p>
         </div>
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-700">
           <input
             name="startActive"
             type="checkbox"

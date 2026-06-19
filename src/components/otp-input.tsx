@@ -55,10 +55,10 @@ export function OtpInput({ name = "code", length = 6, invalid = false }: Props) 
   }
 
   const cellBase =
-    "flex-1 aspect-square rounded-[13px] text-center font-display text-[22px] font-semibold focus:outline-none";
+    "flex-1 aspect-square rounded-2xl text-center font-display text-[22px] font-semibold focus:outline-none";
   const cellTone = invalid
-    ? "border-[1.5px] border-[#f4b8bf] bg-[#fef2f3] text-[#dc2626]"
-    : "border-[1.5px] border-[#ecdfeb] bg-[#faf6fb] text-[#2c1f29] focus:border-2 focus:border-[#ec4899] focus:bg-white focus:ring-4 focus:ring-[#ec4899]/15";
+    ? "border-[1.5px] border-danger-200 bg-danger-50 text-danger-700"
+    : "border-[1.5px] border-brand-200 bg-cream-50 text-ink-900 focus:border-2 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100";
 
   return (
     <div>

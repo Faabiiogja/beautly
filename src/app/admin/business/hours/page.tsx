@@ -8,10 +8,8 @@ export default async function HoursPage() {
 
   return (
     <main className="mx-auto max-w-xl">
-      <h1 className="font-display text-2xl font-semibold text-zinc-900">
-        Horários de atendimento
-      </h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="page-title">Horários de atendimento</h1>
+      <p className="mt-1 text-sm text-ink-500">
         Marque os dias em que você atende e o horário de início e fim. Para
         folgas pontuais, feche o dia direto na agenda.
       </p>

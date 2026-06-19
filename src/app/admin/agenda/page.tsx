@@ -1,4 +1,4 @@
-import { ConfirmButton } from "@/components/confirm-button";
+import { ConfirmForm } from "@/components/confirm-form";
 import { requireProfessional } from "@/lib/auth-guard";
 import { formatPhone, whatsappLink } from "@/lib/phone";
 import {
@@ -41,9 +41,7 @@ export default async function AgendaPage({
   return (
     <main>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-2xl font-semibold text-zinc-900">
-          Agenda
-        </h1>
+        <h1 className="page-title">Agenda</h1>
         <form className="flex items-center gap-2">
           <label htmlFor="agenda-date" className="sr-only">
             Data
@@ -66,10 +64,10 @@ export default async function AgendaPage({
         >
           ← Dia anterior
         </Link>
-        <p className="text-sm font-medium text-zinc-700">
+        <p className="text-sm font-medium text-ink-700">
           {formatDateBr(date)}
           {date === today && (
-            <span className="badge ml-2 bg-brand-100 text-brand-700">hoje</span>
+            <span className="badge badge-brand ml-2">hoje</span>
           )}
         </p>
         <Link
@@ -83,7 +81,7 @@ export default async function AgendaPage({
       <div className="card mt-4 flex items-center justify-between gap-3 p-4">
         {closed ? (
           <>
-            <span className="badge bg-red-100 text-red-700">Dia fechado</span>
+            <span className="badge badge-danger">Dia fechado</span>
             <form action={reopenDayAction}>
               <input type="hidden" name="date" value={date} />
               <button className="btn-secondary py-1.5 text-xs">
@@ -93,34 +91,36 @@ export default async function AgendaPage({
           </>
         ) : (
           <>
-            <p className="text-sm text-zinc-600">
+            <p className="text-sm text-ink-500">
               Não vai atender neste dia? Feche para bloquear novos agendamentos.
             </p>
-            <form action={closeDayAction}>
+            <ConfirmForm
+              action={closeDayAction}
+              title="Fechar este dia?"
+              description="Agendamentos já existentes não serão cancelados automaticamente."
+              confirmLabel="Fechar dia"
+              danger
+              trigger={
+                <button className="btn-secondary whitespace-nowrap py-1.5 text-xs">
+                  Fechar dia
+                </button>
+              }
+            >
               <input type="hidden" name="date" value={date} />
-              <ConfirmButton
-                message="Fechar este dia? Agendamentos já existentes não serão cancelados automaticamente."
-                className="btn-secondary whitespace-nowrap py-1.5 text-xs"
-              >
-                Fechar dia
-              </ConfirmButton>
-            </form>
+            </ConfirmForm>
           </>
         )}
       </div>
 
       <ul className="mt-6 space-y-3">
         {appointments.map((appointment) => (
-          <li
-            key={appointment.id}
-            className="card flex items-center justify-between gap-3 p-4"
-          >
+          <li key={appointment.id} className="card flex items-center justify-between gap-3 p-4">
             <div className="min-w-0">
-              <p className="font-medium text-zinc-900">
+              <p className="font-medium text-ink-900">
                 {formatInTimeZone(appointment.startAt, tz, "HH:mm")} ·{" "}
                 {appointment.serviceNameSnapshot}
               </p>
-              <p className="mt-0.5 truncate text-sm text-zinc-500">
+              <p className="mt-0.5 truncate text-sm text-ink-500">
                 {appointment.customerName} ·{" "}
                 <a
                   href={whatsappLink(appointment.customerPhone)}
@@ -133,15 +133,21 @@ export default async function AgendaPage({
                 · R$ {appointment.priceSnapshot}
               </p>
             </div>
-            <form action={cancelAppointmentAction}>
+            <ConfirmForm
+              action={cancelAppointmentAction}
+              title="Cancelar o atendimento?"
+              description={`Avisaremos a ${appointment.customerName}? Recomendamos avisar a cliente pelo WhatsApp.`}
+              confirmLabel="Sim, cancelar"
+              cancelLabel="Voltar"
+              danger
+              trigger={
+                <button className="btn-secondary whitespace-nowrap py-1.5 text-xs text-danger-700 hover:border-danger-300">
+                  Cancelar
+                </button>
+              }
+            >
               <input type="hidden" name="id" value={appointment.id} />
-              <ConfirmButton
-                message={`Cancelar o atendimento de ${appointment.customerName}? Avise a cliente pelo WhatsApp.`}
-                className="btn-secondary whitespace-nowrap py-1.5 text-xs text-red-600 hover:border-red-300 hover:text-red-700"
-              >
-                Cancelar
-              </ConfirmButton>
-            </form>
+            </ConfirmForm>
           </li>
         ))}
         {appointments.length === 0 && (

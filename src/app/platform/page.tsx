@@ -1,3 +1,4 @@
+import { ActiveBadge } from "@/components/status-badge";
 import { requirePlatformAdmin } from "@/lib/auth-guard";
 import { listProfessionals } from "@/services/professional-service";
 import Link from "next/link";
@@ -10,9 +11,7 @@ export default async function PlatformHome() {
   return (
     <main>
       <div className="flex items-center justify-between gap-3">
-        <h1 className="font-display text-2xl font-semibold text-zinc-900">
-          Profissionais
-        </h1>
+        <h1 className="page-title">Profissionais</h1>
         <Link href="/platform/professionals/new" className="btn-primary">
           Nova profissional
         </Link>
@@ -25,23 +24,15 @@ export default async function PlatformHome() {
             className="card flex items-center justify-between gap-3 p-4"
           >
             <div className="min-w-0">
-              <p className="flex items-center gap-2 font-medium text-zinc-900">
+              <p className="flex items-center gap-2 font-display text-base font-semibold text-ink-900">
                 {professional.name}
-                <span
-                  className={`badge ${
-                    professional.status === "ACTIVE"
-                      ? "bg-emerald-100 text-emerald-800"
-                      : "bg-zinc-100 text-zinc-500"
-                  }`}
-                >
-                  {professional.status === "ACTIVE" ? "Ativa" : "Inativa"}
-                </span>
+                <ActiveBadge status={professional.status} />
               </p>
-              <p className="mt-0.5 text-sm text-zinc-500">
+              <p className="mt-0.5 text-sm text-ink-500">
                 <Link
                   href={`/${professional.slug}`}
                   target="_blank"
-                  className="text-brand-700 hover:underline"
+                  className="font-medium text-brand-700 hover:underline"
                 >
                   /{professional.slug}
                 </Link>

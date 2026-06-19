@@ -4,7 +4,6 @@ import { todayLocalDateStr } from "@/lib/timezone";
 import { findBusinessBySlug } from "@/repositories/business-repository";
 import { availableSlots } from "@/services/availability-service";
 import { listMyAppointments } from "@/services/booking-service";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AccessForm } from "./access-form";
 import { AppointmentsList } from "./list";
@@ -23,21 +22,18 @@ export default async function MyAppointmentsPage({
   const phone = await verifiedPhoneFor(business.id);
 
   return (
-    <main className="mx-auto w-full max-w-md flex-1 px-4 py-6">
-      <div className="overflow-hidden rounded-[32px] bg-[#faf8fb] shadow-[0_30px_60px_-30px_rgba(157,23,77,0.35)] ring-1 ring-black/5">
-        <div className="border-b border-[#f1ebf2] bg-white px-5 py-3.5">
-          <Link
-            href={`/${slug}`}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#9b6aa0]"
-          >
-            ← Voltar
-          </Link>
+    <main className="mx-auto flex w-full max-w-md flex-1 px-4 py-6 sm:py-8 lg:py-10">
+      <div className="overflow-hidden rounded-[2rem] bg-cream-50 shadow-glow-strong ring-1 ring-black/5 sm:rounded-[2.25rem]">
+        <div className="border-b border-cream-200 bg-white px-5 py-3.5">
+          <a href={`/${slug}`} className="link-back">
+            <span aria-hidden>←</span> Voltar
+          </a>
           {phone && (
             <div className="mt-2">
-              <p className="font-display text-[22px] font-semibold text-[#2c1f29]">
+              <p className="font-display text-[22px] font-semibold tracking-tight text-ink-900">
                 Meus agendamentos
               </p>
-              <p className="mt-0.5 text-[13px] font-medium text-[#9b8a98]">
+              <p className="mt-0.5 text-[13px] font-medium text-ink-500">
                 {formatPhone(phone)}
               </p>
             </div>

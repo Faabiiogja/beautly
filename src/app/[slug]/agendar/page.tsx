@@ -5,7 +5,6 @@ import { findBusinessBySlug } from "@/repositories/business-repository";
 import { availableSlots } from "@/services/availability-service";
 import { ptBR } from "date-fns/locale";
 import { format } from "date-fns";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BookingForm } from "./booking-form";
 
@@ -26,6 +25,14 @@ function noonUtc(dateStr: string): Date {
 
 function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function Sparkle({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+      <path d="M12 1.5c.9 5.2 3.4 7.7 8.6 8.6-5.2.9-7.7 3.4-8.6 8.6-.9-5.2-3.4-7.7-8.6-8.6 5.2-.9 7.7-3.4 8.6-8.6Z" />
+    </svg>
+  );
 }
 
 export default async function AgendarPage({
@@ -64,33 +71,28 @@ export default async function AgendarPage({
   const selectedLabel = format(reference, "EEEE, d 'de' MMMM", { locale: ptBR });
 
   return (
-    <main className="mx-auto w-full max-w-md flex-1 px-4 py-6">
-      <div className="overflow-hidden rounded-[32px] bg-[#faf8fb] shadow-[0_30px_60px_-30px_rgba(157,23,77,0.35)] ring-1 ring-black/5">
-        <div className="border-b border-[#f1ebf2] bg-white px-5 py-3.5">
-          <Link
-            href={`/${slug}`}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#9b6aa0]"
-          >
-            ← Voltar
-          </Link>
+    <main className="mx-auto flex w-full max-w-md flex-1 px-4 py-6 sm:py-8 lg:py-10">
+      <div className="overflow-hidden rounded-[2rem] bg-cream-50 shadow-glow-strong ring-1 ring-black/5 sm:rounded-[2.25rem]">
+        <div className="border-b border-cream-200 bg-white px-5 py-3.5">
+          <a href={`/${slug}`} className="link-back">
+            <span aria-hidden>←</span> Voltar
+          </a>
         </div>
 
         <div className="px-5 pb-7 pt-5">
-          <div className="mb-6 flex items-center gap-3.5 rounded-[20px] border border-[#f4dcee] bg-gradient-to-br from-[#fdeef7] to-[#f3ecfb] p-4">
-            <span className="gradient-brand flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-[14px] text-white">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <path d="M12 1.5c.9 5.2 3.4 7.7 8.6 8.6-5.2.9-7.7 3.4-8.6 8.6-.9-5.2-3.4-7.7-8.6-8.6 5.2-.9 7.7-3.4 8.6-8.6Z" />
-              </svg>
+          <div className="surface mb-6 flex items-center gap-3.5 border-brand-200 bg-gradient-to-br from-brand-50 to-lilac-50 p-4">
+            <span className="gradient-brand flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-2xl text-white">
+              <Sparkle className="h-5 w-5" />
             </span>
             <div className="flex-1">
-              <p className="text-[15px] font-semibold text-[#2c1f29]">
+              <p className="text-[15px] font-semibold text-ink-900">
                 {service.name}
               </p>
-              <p className="mt-0.5 text-[13px] font-medium text-[#9b8a98]">
+              <p className="mt-0.5 text-[13px] font-medium text-ink-500">
                 {service.durationMinutes} min
               </p>
             </div>
-            <span className="font-display text-[19px] font-semibold text-[#be185d]">
+            <span className="font-display text-[19px] font-semibold text-brand-700">
               R$ {service.price}
             </span>
           </div>

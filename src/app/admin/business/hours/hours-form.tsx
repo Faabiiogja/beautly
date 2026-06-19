@@ -31,9 +31,9 @@ export function HoursForm({ hours }: { hours: Row[] }) {
       {hours.map((hour) => (
         <div
           key={hour.weekday}
-          className="flex flex-wrap items-center gap-3 rounded-xl px-2 py-2.5 hover:bg-zinc-50"
+          className="flex flex-wrap items-center gap-3 rounded-2xl px-2 py-2.5 transition hover:bg-cream-50"
         >
-          <label className="flex w-32 cursor-pointer items-center gap-2 text-sm font-medium text-zinc-800">
+          <label className="flex w-32 cursor-pointer items-center gap-2 text-sm font-medium text-ink-900">
             <input
               type="checkbox"
               name={`open-${hour.weekday}`}
@@ -42,7 +42,7 @@ export function HoursForm({ hours }: { hours: Row[] }) {
             />
             {NAMES[hour.weekday]}
           </label>
-          <div className="flex items-center gap-2 text-sm text-zinc-500">
+          <div className="flex items-center gap-2 text-sm text-ink-500">
             <label className="sr-only" htmlFor={`start-${hour.weekday}`}>
               Início {NAMES[hour.weekday]}
             </label>

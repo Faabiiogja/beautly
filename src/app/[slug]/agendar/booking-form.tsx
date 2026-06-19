@@ -1,6 +1,7 @@
 "use client";
 
 import { OtpInput } from "@/components/otp-input";
+import { PhoneField } from "@/components/phone-field";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import {
@@ -29,18 +30,15 @@ interface Props {
 function StepHeader({ n, title }: { n: number; title: string }) {
   return (
     <div className="mb-3.5 flex items-center gap-2.5">
-      <span className="gradient-brand flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold text-white">
+      <span className="gradient-brand flex h-7 w-7 items-center justify-center rounded-full font-display text-sm font-bold text-white">
         {n}
       </span>
-      <h2 className="font-display text-[17px] font-semibold text-[#2c1f29]">
+      <h2 className="font-display text-[17px] font-semibold text-ink-900">
         {title}
       </h2>
     </div>
   );
 }
-
-const cardClass =
-  "rounded-[22px] border border-[#f0e6ee] bg-white p-4 shadow-[0_4px_14px_-8px_rgba(157,23,77,0.16)]";
 
 export function BookingForm({
   slug,
@@ -93,12 +91,12 @@ export function BookingForm({
       {/* PASSO 1 — data e horário */}
       <section>
         <StepHeader n={1} title="Escolha data e horário" />
-        <div className={cardClass}>
+        <div className="surface">
           <div className="mb-3 flex items-center justify-between">
-            <span className="text-sm font-semibold text-[#574a54]">
+            <span className="text-sm font-semibold capitalize text-ink-700">
               {monthLabel}
             </span>
-            <span className="text-xs font-medium text-[#b09cb6]">
+            <span className="text-xs font-medium text-lilac-500">
               próximos 15 dias
             </span>
           </div>
@@ -112,10 +110,8 @@ export function BookingForm({
                   type="button"
                   onClick={() => selectDate(d.value)}
                   aria-pressed={active}
-                  className={`w-[52px] shrink-0 rounded-[15px] py-2.5 text-center transition ${
-                    active
-                      ? "gradient-brand text-white shadow-[0_8px_18px_-8px_rgba(236,72,153,0.6)]"
-                      : "border border-[#ecdfeb] bg-white text-[#574a54]"
+                  className={`w-[52px] shrink-0 rounded-2xl py-2.5 text-center transition ${
+                    active ? "chip-selected" : "chip"
                   }`}
                 >
                   <span
@@ -133,14 +129,13 @@ export function BookingForm({
 
           {slots.length === 0 ? (
             <div className="px-3 pb-3.5 pt-6 text-center">
-              <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f6f1f8]">
+              <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-cream-100 text-lilac-500">
                 <svg
-                  width="26"
-                  height="26"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="#c3a9cf"
+                  stroke="currentColor"
                   strokeWidth="2"
+                  className="h-6 w-6"
                   aria-hidden
                 >
                   <rect x="3" y="5" width="18" height="16" rx="3" />
@@ -148,16 +143,16 @@ export function BookingForm({
                   <path d="M9 15l6 4M15 15l-6 4" opacity=".6" />
                 </svg>
               </span>
-              <p className="text-[15px] font-semibold text-[#574a54]">
+              <p className="text-[15px] font-semibold text-ink-700">
                 Sem horários neste dia
               </p>
-              <p className="mt-1.5 text-[13.5px] leading-relaxed text-[#a394aa]">
+              <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-500">
                 Não há horários disponíveis nesta data. Tente outro dia.
               </p>
             </div>
           ) : (
             <>
-              <p className="mb-2.5 text-[13px] font-semibold capitalize text-[#574a54]">
+              <p className="mb-2.5 text-[13px] font-semibold capitalize text-ink-700">
                 Horários — {selectedLabel}
               </p>
               <div className="grid grid-cols-3 gap-2.5">
@@ -169,10 +164,8 @@ export function BookingForm({
                       type="button"
                       onClick={() => setChosen(slot)}
                       aria-pressed={active}
-                      className={`rounded-[13px] py-3 text-center text-sm font-semibold transition ${
-                        active
-                          ? "gradient-brand text-white shadow-[0_8px_16px_-8px_rgba(236,72,153,0.6)]"
-                          : "border border-[#ecdfeb] bg-white text-[#574a54]"
+                      className={`rounded-2xl py-3 text-center text-sm font-semibold transition ${
+                        active ? "chip-selected" : "chip"
                       }`}
                     >
                       {slot.label}
@@ -193,10 +186,10 @@ export function BookingForm({
         {/* PASSO 2 — telefone */}
         <section>
           <StepHeader n={2} title="Seu telefone" />
-          <div className={cardClass}>
+          <div className="surface">
             <label
               htmlFor="customerName"
-              className="mb-2 block text-[13px] font-semibold text-[#574a54]"
+              className="mb-2 block text-[13px] font-semibold text-ink-700"
             >
               Seu nome
             </label>
@@ -205,37 +198,21 @@ export function BookingForm({
               name="customerName"
               placeholder="Maria da Silva"
               required
-              className="mb-3.5 w-full rounded-[14px] border-[1.5px] border-[#ecdfeb] bg-[#faf6fb] px-4 py-3.5 text-base font-medium text-[#2c1f29] placeholder:font-normal placeholder:text-[#b6a7bd] focus:border-[#ec4899] focus:outline-none focus:ring-4 focus:ring-[#ec4899]/12"
+              className="mb-3.5 w-full rounded-2xl border-[1.5px] border-brand-200 bg-cream-50 px-4 py-3.5 text-base font-medium text-ink-900 placeholder:font-normal placeholder:text-ink-500 focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-100"
             />
 
             <label
               htmlFor="phone"
-              className="mb-2 block text-[13px] font-semibold text-[#574a54]"
+              className="mb-2 block text-[13px] font-semibold text-ink-700"
             >
               Número com DDD
             </label>
-            <div className="mb-3.5 flex items-center gap-2.5 rounded-[14px] border-[1.5px] border-[#ecdfeb] bg-[#faf6fb] px-4 py-1 focus-within:border-[#ec4899] focus-within:ring-4 focus-within:ring-[#ec4899]/12">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#b09cb6"
-                strokeWidth="2"
-                aria-hidden
-              >
-                <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" />
-              </svg>
-              <input
+            <div className="mb-3.5">
+              <PhoneField
                 id="phone"
-                name="phone"
-                type="tel"
-                inputMode="tel"
                 placeholder="(11) 95555-0184"
-                required
                 value={phone}
-                onChange={(event) => setPhone(event.target.value)}
-                className="w-full bg-transparent py-2.5 text-base font-semibold text-[#2c1f29] placeholder:font-normal placeholder:text-[#b6a7bd] focus:outline-none"
+                onChange={setPhone}
               />
             </div>
 
@@ -252,11 +229,11 @@ export function BookingForm({
               <p className="alert-error mt-3">{sendState.error}</p>
             )}
             {sendState?.sent ? (
-              <p className="mt-3 text-center text-[12.5px] leading-snug text-emerald-600">
+              <p className="mt-3 text-center text-[12.5px] leading-snug text-success-700">
                 Código enviado! Confira seu SMS ou WhatsApp.
               </p>
             ) : (
-              <p className="mt-3 text-center text-[12.5px] leading-snug text-[#a394aa]">
+              <p className="mt-3 text-center text-[12.5px] leading-snug text-ink-500">
                 Enviaremos um código por SMS ou WhatsApp para confirmar seu
                 agendamento.
               </p>
@@ -267,8 +244,8 @@ export function BookingForm({
         {/* PASSO 3 — código */}
         <section>
           <StepHeader n={3} title="Confirme o código" />
-          <div className={cardClass}>
-            <p className="mb-3.5 text-[13.5px] leading-normal text-[#574a54]">
+          <div className="surface">
+            <p className="mb-3.5 text-[13.5px] leading-normal text-ink-700">
               Digite o código de 6 dígitos enviado para o seu telefone.
             </p>
 
@@ -277,30 +254,28 @@ export function BookingForm({
             </div>
 
             {confirmState?.error && (
-              <div className="mb-4 flex items-start gap-2.5 rounded-[13px] border border-[#f6cdd2] bg-[#fef2f3] px-3.5 py-3">
+              <div className="alert-error mb-4 flex items-start gap-2.5">
                 <svg
-                  width="17"
-                  height="17"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="#dc2626"
+                  stroke="currentColor"
                   strokeWidth="2"
-                  className="mt-0.5 shrink-0"
+                  className="mt-0.5 h-4 w-4 shrink-0"
                   aria-hidden
                 >
                   <circle cx="12" cy="12" r="9" />
                   <path d="M12 8v4M12 16h.01" />
                 </svg>
-                <span className="text-[13px] font-medium leading-snug text-[#b91c1c]">
+                <span className="text-[13px] font-medium leading-snug">
                   {confirmState.error}
                 </span>
               </div>
             )}
 
             <div className="mb-4 flex items-center justify-between">
-              <span className="text-[13px] text-[#a394aa]">Não recebeu?</span>
+              <span className="text-[13px] text-ink-500">Não recebeu?</span>
               {cooldown > 0 ? (
-                <span className="text-[13px] font-semibold text-[#c3b6c8]">
+                <span className="text-[13px] font-semibold text-lilac-500">
                   Reenviar em {cooldownLabel}
                 </span>
               ) : (
@@ -308,7 +283,7 @@ export function BookingForm({
                   type="button"
                   disabled={sending || !phoneReady}
                   onClick={requestCode}
-                  className="text-[13px] font-bold text-[#be185d] disabled:opacity-50"
+                  className="text-[13px] font-bold text-brand-700 disabled:opacity-50"
                 >
                   Reenviar código
                 </button>
@@ -323,7 +298,7 @@ export function BookingForm({
               {confirming ? "Confirmando..." : "Confirmar agendamento"}
             </button>
             {!chosen && (
-              <p className="mt-2.5 text-center text-[12.5px] text-[#a394aa]">
+              <p className="mt-2.5 text-center text-[12.5px] text-ink-500">
                 Escolha um horário no passo 1 para confirmar.
               </p>
             )}

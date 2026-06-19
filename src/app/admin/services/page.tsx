@@ -1,3 +1,4 @@
+import { ServiceActiveBadge } from "@/components/status-badge";
 import { requireProfessional } from "@/lib/auth-guard";
 import { listServices } from "@/services/service-catalog";
 import {
@@ -12,18 +13,14 @@ export default async function ServicesPage() {
 
   return (
     <main>
-      <h1 className="font-display text-2xl font-semibold text-zinc-900">
-        Serviços
-      </h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="page-title">Serviços</h1>
+      <p className="mt-1 text-sm text-ink-500">
         Só serviços ativos aparecem para suas clientes. Use nomes claros, como
         “Manicure simples” ou “Design de sobrancelha”.
       </p>
 
       <form action={createServiceAction} className="card mt-6 p-5">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Novo serviço
-        </h2>
+        <h2 className="section-label mb-4">Novo serviço</h2>
         <div className="grid gap-3 sm:grid-cols-[1fr_8rem_8rem_auto]">
           <div>
             <label htmlFor="new-name" className="field-label">
@@ -76,15 +73,7 @@ export default async function ServicesPage() {
         {services.map((service) => (
           <li key={service.id} className="card p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <span
-                className={`badge ${
-                  service.active
-                    ? "bg-emerald-100 text-emerald-800"
-                    : "bg-zinc-100 text-zinc-500"
-                }`}
-              >
-                {service.active ? "Ativo" : "Inativo"}
-              </span>
+              <ServiceActiveBadge active={service.active} />
               <form action={toggleServiceAction}>
                 <input type="hidden" name="id" value={service.id} />
                 <input
@@ -92,7 +81,7 @@ export default async function ServicesPage() {
                   name="active"
                   value={(!service.active).toString()}
                 />
-                <button className="text-sm text-brand-700 hover:underline">
+                <button className="text-sm font-medium text-brand-700 hover:underline">
                   {service.active ? "Inativar" : "Ativar"}
                 </button>
               </form>
