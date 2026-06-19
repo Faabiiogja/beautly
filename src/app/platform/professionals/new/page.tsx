@@ -88,12 +88,13 @@ export default function NewProfessionalPage() {
             id="password"
             name="password"
             type="password"
-            minLength={6}
+            minLength={8}
             required
             className="input"
           />
           <p className="mt-1 text-xs text-zinc-500">
-            Combine com a profissional a troca da senha no primeiro acesso.
+            Mínimo de 8 caracteres, evite senhas óbvias. Combine com a
+            profissional a troca no primeiro acesso.
           </p>
         </div>
         <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700">

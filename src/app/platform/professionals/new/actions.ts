@@ -1,6 +1,7 @@
 "use server";
 
 import { requirePlatformAdmin } from "@/lib/auth-guard";
+import { validatePassword } from "@/lib/password-policy";
 import { createProfessional } from "@/services/professional-service";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -13,7 +14,12 @@ const schema = z.object({
     .regex(/^[a-z0-9-]+$/, "Use apenas letras minúsculas, números e hífen."),
   contactPhone: z.string().min(8),
   email: z.string().email(),
-  password: z.string().min(6),
+  password: z.string().superRefine((value, ctx) => {
+    const check = validatePassword(value);
+    if (!check.ok) {
+      ctx.addIssue({ code: "custom", message: check.error! });
+    }
+  }),
   startActive: z.coerce.boolean(),
 });
 

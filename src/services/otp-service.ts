@@ -67,9 +67,15 @@ export async function verifyOtp(
   if (!record) return false;
 
   // Reserva a tentativa de forma atômica para impedir que requisições em
-  // paralelo ultrapassem o limite de tentativas.
+  // paralelo ultrapassem o limite de tentativas. Re-confirma expiresAt aqui
+  // para fechar a janela TOCTOU entre o findFirst acima e este update.
   const claimed = await prisma.otpVerification.updateMany({
-    where: { id: record.id, consumedAt: null, attempts: { lt: OTP_MAX_ATTEMPTS } },
+    where: {
+      id: record.id,
+      consumedAt: null,
+      expiresAt: { gt: new Date() },
+      attempts: { lt: OTP_MAX_ATTEMPTS },
+    },
     data: { attempts: { increment: 1 } },
   });
   if (claimed.count === 0) return false;
