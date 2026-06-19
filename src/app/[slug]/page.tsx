@@ -66,7 +66,7 @@ export default async function PublicBusinessPage({
 
   if (business.status !== "ACTIVE") {
     return (
-      <main className="mx-auto flex w-full max-w-md flex-1 px-4 py-6 sm:py-8 lg:py-10">
+      <main className="mx-auto w-full max-w-md flex-1 px-4 py-6 sm:py-8 lg:py-10">
         <div className="overflow-hidden rounded-[2rem] bg-white shadow-glow-strong ring-1 ring-black/5 sm:rounded-[2.25rem]">
           <header
             className="px-7 pb-9 pt-9 text-center text-white"
@@ -120,7 +120,7 @@ export default async function PublicBusinessPage({
     .join(" · ");
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 px-4 py-6 sm:py-8 lg:py-10">
+      <main className="mx-auto w-full max-w-md flex-1 px-4 py-6 sm:py-8 lg:py-10">
       <div className="overflow-hidden rounded-[2rem] bg-white shadow-glow-strong ring-1 ring-black/5 sm:rounded-[2.25rem]">
         <header className="gradient-header px-7 pb-8 pt-9 text-center text-white">
           <span className="mx-auto flex h-22 w-22 items-center justify-center rounded-full bg-white shadow-glow-strong">

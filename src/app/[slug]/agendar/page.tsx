@@ -71,7 +71,7 @@ export default async function AgendarPage({
   const selectedLabel = format(reference, "EEEE, d 'de' MMMM", { locale: ptBR });
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 px-4 py-6 sm:py-8 lg:py-10">
+    <main className="mx-auto w-full max-w-md flex-1 px-4 py-6 sm:py-8 lg:py-10">
       <div className="overflow-hidden rounded-[2rem] bg-cream-50 shadow-glow-strong ring-1 ring-black/5 sm:rounded-[2.25rem]">
         <div className="border-b border-cream-200 bg-white px-5 py-3.5">
           <a href={`/${slug}`} className="link-back">

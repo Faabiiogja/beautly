@@ -40,7 +40,7 @@ export default async function ConfirmadoPage({
   );
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 px-4 py-6 sm:py-8 lg:py-10">
+    <main className="mx-auto w-full max-w-md flex-1 px-4 py-6 sm:py-8 lg:py-10">
       <div className="overflow-hidden rounded-[2rem] bg-white px-6 pb-8 pt-10 text-center shadow-glow-strong ring-1 ring-black/5 sm:rounded-[2.25rem]">
         <span
           className="mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full shadow-glow-strong"
