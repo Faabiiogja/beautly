@@ -6,11 +6,15 @@ const prisma = new PrismaClient();
 async function main() {
   const email = process.env.ADMIN_EMAIL ?? "admin@beautly.com";
   const password = process.env.ADMIN_PASSWORD;
+
+  // Em deploys de preview a ADMIN_PASSWORD pode não estar definida — skip
+  // silencioso em vez de quebrar o build. Nunca criamos admin sem senha.
   if (!password || password.length < 10) {
-    throw new Error(
-      "Defina ADMIN_PASSWORD (mínimo 10 caracteres) antes de rodar o seed. " +
-        "Nunca use senha padrão em produção.",
+    console.log(
+      "Seed: ADMIN_PASSWORD ausente ou curta — pulando criação do admin " +
+        "(normal em preview; em produção, defina ADMIN_PASSWORD).",
     );
+    return;
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });
