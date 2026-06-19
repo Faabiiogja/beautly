@@ -18,19 +18,22 @@ async function main() {
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    console.log(`Admin ${email} ja existe.`);
-    return;
-  }
 
-  await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: { email },
+    create: {
       email,
       passwordHash: await bcrypt.hash(password, 10),
       role: "PLATFORM_ADMIN",
     },
+    update: {
+      // Sincroniza a senha com ADMIN_PASSWORD a cada deploy em produção —
+      // assim rotacionar a senha é só trocar a env var + redeployar.
+      passwordHash: await bcrypt.hash(password, 10),
+      role: "PLATFORM_ADMIN",
+    },
   });
-  console.log(`Admin criado: ${email}`);
+  console.log(existing ? `Admin ${email} atualizado.` : `Admin criado: ${email}`);
 }
 
 main()
