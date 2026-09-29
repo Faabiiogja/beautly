@@ -1,19 +1,13 @@
 import Link from 'next/link'
 import type { AppointmentView as Appointment } from '@/lib/appointment-data'
 import { canCancel, displayStatus } from '@/lib/appointment-status'
-import type { DisplayStatus } from '@/lib/appointment-status'
 import { formatLongDate, toLocalDayAndTime } from '@/lib/dates'
 import { formatDuration, formatPrice } from '@/lib/format'
 import { formatPhone } from '@/lib/phone'
+import { StatusBadge } from '@/components/StatusBadge'
 import { CancelAppointment } from './CancelAppointment'
 import { CopyLinkButton } from './CopyLinkButton'
 import { Shell } from './Shell'
-
-const BADGE: Record<DisplayStatus, { label: string; className: string }> = {
-  confirmed: { label: 'Confirmado', className: 'bg-brand-tint text-brand' },
-  cancelled: { label: 'Cancelado', className: 'bg-danger-tint text-danger' },
-  past: { label: 'Já aconteceu', className: 'bg-subtle text-muted' },
-}
 
 export function AppointmentView({
   appointment,
@@ -31,13 +25,12 @@ export function AppointmentView({
   const status = displayStatus(appointment, now)
   const { day, time } = toLocalDayAndTime(new Date(appointment.start_time))
   const firstName = appointment.client_name.split(' ')[0]
-  const badge = BADGE[status]
 
   return (
     <Shell>
       <main className="flex flex-col gap-6 px-5 py-8">
         <header className="flex flex-col items-center gap-2 text-center">
-          <span className={`rounded-full px-3 py-1 text-label-sm uppercase ${badge.className}`}>{badge.label}</span>
+          <StatusBadge status={status} />
           <h1 className="font-headline text-headline-lg text-ink">
             {isNew && status === 'confirmed' ? `Tudo certo, ${firstName}!` : 'Seu agendamento'}
           </h1>
