@@ -28,8 +28,8 @@ Segue o padrão documentado pela própria Vercel para plataformas multi-tenant (
 1. O arquivo que intercepta a requisição lê o header `Host`.
 2. Extrai o subdomínio (ex: `ana` de `ana.beautly.cloud`).
 3. Reescreve a rota internamente para uma rota dinâmica (ex: `/tenant/[subdomain]/...`), sem expor isso na URL visível. `painel.beautly.cloud` e o domínio apex passam sem rewrite (ver seção própria abaixo).
-4. A página resolve o tenant a partir do subdomínio (consulta cacheada — subdomínio é praticamente estático por tenant).
-5. Se o subdomínio não existir ou o tenant estiver inativo: renderiza a página de "indisponível" (ver regra multi-tenant no `CONTEXT.md`).
+4. A página resolve o tenant a partir do subdomínio com o client anon (`lib/supabase/anon.ts`). Cache da consulta ainda não implementado — subdomínio é praticamente estático por tenant, candidato a cache depois.
+5. Se o subdomínio não existir ou o tenant estiver inativo: renderiza o componente `Unavailable` (mesma resposta nos dois casos, sem vazar se o tenant existe) (ver regra multi-tenant no `CONTEXT.md`).
 
 > **Atenção, versão do Next.js**: a partir do Next.js 16, o arquivo `middleware.ts` foi **renomeado pra `proxy.ts`** (mesma função, export renomeado de `middleware` pra `proxy`). Isso é o tipo de mudança que quebra qualquer tutorial/exemplo antigo copiado da internet — confirmar a versão instalada antes de escrever esse arquivo.
 
@@ -88,7 +88,6 @@ beautly/
 │   │   ├── horarios/page.tsx            # expediente por dia da semana + bloqueio de dias
 │   │   └── configuracoes/page.tsx       # nome, logo, telefone, endereço, descrição
 │   │
-│   ├── indisponivel/page.tsx            # tenant não existe ou está inativo
 │   └── page.tsx                         # apex (beautly.cloud) — stub, sem landing page de marketing
 │
 ├── lib/
