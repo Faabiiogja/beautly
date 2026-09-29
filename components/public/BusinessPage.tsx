@@ -1,15 +1,9 @@
-import { formatPhone } from '@/lib/phone'
+import { formatPhone, whatsappUrl } from '@/lib/phone'
 import type { PublicService, PublicTenant } from '@/lib/tenants'
 import { BrandEmblem } from './BrandEmblem'
 import { BookingFlow } from './BookingFlow'
 import { ChatIcon, PinIcon } from './icons'
 import { Shell } from './Shell'
-
-// Só dígitos, com DDI 55 se ainda não tiver, para o link do WhatsApp.
-const whatsappUrl = (phone: string) => {
-  const digits = phone.replace(/\D/g, '')
-  return `https://wa.me/${digits.startsWith('55') ? digits : `55${digits}`}`
-}
 
 export function BusinessPage({ tenant, services, days }: { tenant: PublicTenant; services: PublicService[]; days: { day: string; open: boolean }[] }) {
   return (

@@ -13,6 +13,8 @@ import {
   E2E_BUSINESS_NAME,
   E2E_ACTIVE_SERVICE_NAMES,
   E2E_INACTIVE_SERVICE_NAME,
+  E2E_APPOINTMENT_CLIENT_NAME,
+  E2E_APPOINTMENT_CLIENT_PHONE,
 } from './e2e-fixtures.ts'
 
 const env = loadEnvFile(join(import.meta.dirname, '../.env.e2e.local'))
@@ -93,12 +95,16 @@ async function seed() {
 
   // 4) serviços: apaga e recria, pra não acumular lixo de execuções anteriores
   await del('services')
-  const { error: servicesError } = await admin.from('services').insert([
-    { tenant_id: userId, name: E2E_ACTIVE_SERVICE_NAMES[0], price_cents: 12000, duration_minutes: 60, active: true },
-    { tenant_id: userId, name: E2E_ACTIVE_SERVICE_NAMES[1], price_cents: 4500, duration_minutes: 45, active: true },
-    { tenant_id: userId, name: E2E_INACTIVE_SERVICE_NAME, price_cents: 6000, duration_minutes: 30, active: false },
-  ])
+  const { data: services, error: servicesError } = await admin
+    .from('services')
+    .insert([
+      { tenant_id: userId, name: E2E_ACTIVE_SERVICE_NAMES[0], price_cents: 12000, duration_minutes: 60, active: true },
+      { tenant_id: userId, name: E2E_ACTIVE_SERVICE_NAMES[1], price_cents: 4500, duration_minutes: 45, active: true },
+      { tenant_id: userId, name: E2E_INACTIVE_SERVICE_NAME, price_cents: 6000, duration_minutes: 30, active: false },
+    ])
+    .select('id, name, price_cents, duration_minutes')
   if (servicesError) throw servicesError
+  const mainService = services.find((s) => s.name === E2E_ACTIVE_SERVICE_NAMES[0])!
 
   // 5) expediente: seg-sex 09:00-18:00, sáb 09:00-13:00, dom fechado (weekday 0 = domingo, padrão Postgres)
   await del('working_hours')
@@ -112,6 +118,27 @@ async function seed() {
 
   // 6) sem dias bloqueados de execuções anteriores
   await del('blocked_days')
+
+  // 7) um agendamento confirmado no futuro, pra ter algo pra cancelar nos specs de Playwright.
+  // Horário fixo (daqui a 2 dias, meio-dia UTC) — bem no futuro, sem depender do expediente
+  // (o insert é direto no banco, não passa pelo motor de disponibilidade).
+  const start = new Date()
+  start.setUTCDate(start.getUTCDate() + 2)
+  start.setUTCHours(12, 0, 0, 0)
+  const end = new Date(start.getTime() + mainService.duration_minutes * 60_000)
+  const { error: appointmentError } = await admin.from('appointments').insert({
+    tenant_id: userId,
+    service_id: mainService.id,
+    service_name_snapshot: mainService.name,
+    price_cents_snapshot: mainService.price_cents,
+    duration_minutes_snapshot: mainService.duration_minutes,
+    client_name: E2E_APPOINTMENT_CLIENT_NAME,
+    client_phone: E2E_APPOINTMENT_CLIENT_PHONE,
+    start_time: start.toISOString(),
+    end_time: end.toISOString(),
+    status: 'confirmed',
+  })
+  if (appointmentError) throw appointmentError
 
   console.log(`Seed ok: tenant "${E2E_SUBDOMAIN}" (id ${userId}), login ${E2E_EMAIL}`)
 }

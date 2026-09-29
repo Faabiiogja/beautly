@@ -1,22 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useCopyToClipboard } from '@/components/shared/useCopyToClipboard'
 
 export function CopyLinkButton({ url }: { url: string }) {
-  const [copied, setCopied] = useState(false)
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(url)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2500)
-    } catch {
-      // sem permissão de área de transferência: o link continua visível na página para copiar à mão
-    }
-  }
+  const { copied, copy } = useCopyToClipboard()
   return (
     <button
       type="button"
-      onClick={copy}
+      onClick={() => copy(url)}
       className="h-12 w-full rounded-full border-[1.5px] border-border-soft bg-card text-label-md text-ink transition active:scale-[0.98]"
     >
       {copied ? 'Link copiado!' : 'Copiar link do agendamento'}

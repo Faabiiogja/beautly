@@ -18,6 +18,15 @@ export function formatPhone(value: string): string {
   return value
 }
 
+// "11999990000" -> link do WhatsApp, sempre com DDI 55. Só considera o 55 já presente como DDI
+// quando o tamanho bate com DDI+DDD+número (12 ou 13 dígitos) — senão um DDD 55 (Passo Fundo/RS)
+// seria cortado por engano, igual o normalizePhone acima já cuida.
+export function whatsappUrl(phone: string): string {
+  const digits = phone.replace(/\D/g, '')
+  const hasDDI = (digits.length === 12 || digits.length === 13) && digits.startsWith('55')
+  return `https://wa.me/${hasDDI ? digits : `55${digits}`}`
+}
+
 // Máscara de digitação: "11999990000" -> "(11) 99999-0000". Até 10 dígitos usa 4-4 (fixo);
 // o 11º dígito passa para 5-4 (celular). Ignora tudo que não é dígito e corta em 11.
 export function maskPhone(raw: string): string {

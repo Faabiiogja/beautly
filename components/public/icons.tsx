@@ -53,3 +53,55 @@ export const MailIcon = () => (
     <path d="M4 7.5l8 6 8-6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
   </svg>
 )
+
+// Navegação do painel (shell) e ações da tela de Agendamentos — mesmo traço 24x24 dos ícones acima.
+export const CalendarIcon = () => (
+  <svg {...strokeBase}>
+    <rect x="3" y="5" width="18" height="16" rx="2" strokeWidth="1.8" />
+    <line x1="3" y1="9" x2="21" y2="9" strokeWidth="1.8" />
+    <line x1="8" y1="3" x2="8" y2="7" strokeLinecap="round" strokeWidth="1.8" />
+    <line x1="16" y1="3" x2="16" y2="7" strokeLinecap="round" strokeWidth="1.8" />
+  </svg>
+)
+
+export const ScissorsIcon = () => (
+  <svg {...strokeBase}>
+    <circle cx="6" cy="6" r="2.5" strokeWidth="1.8" />
+    <circle cx="6" cy="18" r="2.5" strokeWidth="1.8" />
+    <line x1="8.5" y1="7.5" x2="20" y2="18" strokeLinecap="round" strokeWidth="1.8" />
+    <line x1="8.5" y1="16.5" x2="20" y2="6" strokeLinecap="round" strokeWidth="1.8" />
+  </svg>
+)
+
+export const TuneIcon = () => (
+  <svg {...strokeBase}>
+    <line x1="4" y1="6" x2="20" y2="6" strokeLinecap="round" strokeWidth="1.8" />
+    <circle cx="15" cy="6" r="2" strokeWidth="1.8" />
+    <line x1="4" y1="12" x2="20" y2="12" strokeLinecap="round" strokeWidth="1.8" />
+    <circle cx="9" cy="12" r="2" strokeWidth="1.8" />
+    <line x1="4" y1="18" x2="20" y2="18" strokeLinecap="round" strokeWidth="1.8" />
+    <circle cx="13" cy="18" r="2" strokeWidth="1.8" />
+  </svg>
+)
+
+export const LogoutIcon = () => (
+  <svg {...strokeBase}>
+    <path d="M15 4h-4a2 2 0 00-2 2v12a2 2 0 002 2h4" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+    <line x1="9" y1="12" x2="21" y2="12" strokeLinecap="round" strokeWidth="1.8" />
+    <path d="M17 8l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+  </svg>
+)
+
+export const CopyIcon = () => (
+  <svg {...strokeBase} width={16} height={16}>
+    <rect x="8" y="8" width="13" height="13" rx="2" strokeWidth="1.8" />
+    <path d="M16 8V5a2 2 0 00-2-2H5a2 2 0 00-2 2v9a2 2 0 002 2h3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+  </svg>
+)
+
+export const CloseIcon = () => (
+  <svg {...strokeBase} width={20} height={20}>
+    <line x1="6" y1="6" x2="18" y2="18" strokeLinecap="round" strokeWidth="1.8" />
+    <line x1="18" y1="6" x2="6" y2="18" strokeLinecap="round" strokeWidth="1.8" />
+  </svg>
+)

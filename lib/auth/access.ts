@@ -11,7 +11,7 @@ export async function fetchPanelAccess(supabase: SupabaseClient): Promise<PanelA
 
   const { data: tenant } = await supabase
     .from('tenants')
-    .select('id, business_name, active')
+    .select('id, business_name, subdomain, active')
     .eq('id', user.id)
     .maybeSingle()
   return decidePanelAccess(user, tenant)

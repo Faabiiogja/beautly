@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { decidePanelAccess } from '@/lib/panel-access'
 
 const user = { id: 'u1' }
-const tenant = { id: 'u1', business_name: 'Studio da Ana', active: true }
+const tenant = { id: 'u1', business_name: 'Studio da Ana', subdomain: 'ana', active: true }
 
 describe('decidePanelAccess', () => {
   it('manda para o login quando não há usuária logada', () => {

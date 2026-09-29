@@ -29,16 +29,15 @@ describe('AgendaList', () => {
       expect(out).toContain(text)
     }
     expect(out).toContain('R$')
-    expect(out).toContain('<table')
+    expect(out).toContain('<article')
   })
 
-  it('tem a coluna Data e a data em cada linha (uma tabela só)', () => {
+  it('agrupa cada dia numa seção própria, com o rótulo do dia como cabeçalho (uma vez por dia)', () => {
     const out = render([item('a', '2026-10-05T12:00:00Z'), item('c', '2026-10-06T13:00:00Z')])
-    expect(out).toContain('>Data<')
-    expect(out.match(/<table/g)).toHaveLength(1)
-    // o rótulo do dia aparece como cabeçalho da linha, uma vez por linha da tabela
-    expect(out.match(/<th scope="row"[^>]*>Segunda, 05\/10<\/th>/g)).toHaveLength(1)
-    expect(out.match(/<th scope="row"[^>]*>Terça, 06\/10<\/th>/g)).toHaveLength(1)
+    expect(out.match(/<section[^>]*aria-labelledby="dia-2026-10-05"/g)).toHaveLength(1)
+    expect(out.match(/<section[^>]*aria-labelledby="dia-2026-10-06"/g)).toHaveLength(1)
+    expect(out.match(/<h2[^>]*>Segunda, 05\/10<\/h2>/g)).toHaveLength(1)
+    expect(out.match(/<h2[^>]*>Terça, 06\/10<\/h2>/g)).toHaveLength(1)
   })
 
   it('agrupa por dia local e mantém a ordem cronológica recebida', () => {

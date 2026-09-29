@@ -1,4 +1,4 @@
-export type PanelTenant = { id: string; business_name: string; active: boolean }
+export type PanelTenant = { id: string; business_name: string; subdomain: string; active: boolean }
 
 export type PanelAccess =
   | { kind: 'login' }

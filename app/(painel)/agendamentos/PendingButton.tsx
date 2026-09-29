@@ -1,16 +1,13 @@
 'use client'
 
 import { useFormStatus } from 'react-dom'
+import { Button } from '@/components/shared/Button'
 
 export function PendingButton({ children, pendingText }: { children: React.ReactNode; pendingText: string }) {
   const { pending } = useFormStatus()
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="h-11 rounded-full border-[1.5px] border-danger bg-card px-4 text-label-md text-danger disabled:opacity-60"
-    >
+    <Button type="submit" variant="destructive" disabled={pending} className="w-full sm:w-auto">
       {pending ? pendingText : children}
-    </button>
+    </Button>
   )
 }
