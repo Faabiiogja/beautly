@@ -125,6 +125,6 @@ beautly/
 └── tests/db/                             # testes de RLS e não sobreposição (Postgres descartável)
 ```
 
-## Em aberto para a próxima etapa
+## Em aberto
 
-- Projeto Supabase de fato criado e conectado (passo manual): criar o projeto, aplicar `supabase/migrations/` (SQL Editor) e preencher `.env.local`. Ainda não feito.
+O MVP está implementado. O que ficou para depois (deploy, teste em navegador real, limite de taxa, verificação do domínio no Resend e outros) está em [`pos-mvp.md`](./pos-mvp.md).
