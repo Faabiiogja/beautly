@@ -51,6 +51,13 @@ Token gerado de forma aleatória e não sequencial (`gen_random_uuid()`, nativo 
 
 A página de login **não pode viver dentro do layout que guarda a sessão** (o layout redireciona pra `/login` quando não há sessão; se `/login` estiver dentro do mesmo grupo guardado, vira loop de redirecionamento). `login/page.tsx` fica fora do route group `(painel)`.
 
+## Autenticação e acesso ao painel
+
+- Sessão em cookies via `@supabase/ssr`. O `proxy.ts` só renova a sessão (checagem otimista); **a autorização vive no DAL** (`lib/auth/dal.ts`): toda página, action e route handler do painel chama `requirePanelSession()`. O layout sozinho não basta, porque não re-renderiza a cada navegação.
+- O tenant da profissional vem da sessão (`auth.uid()` = `tenants.id`), nunca do subdomínio.
+- Tenant inativo (ou login sem tenant) = "blocked": o login é recusado e uma sessão existente é encerrada em `/auth/blocked` (só route handler consegue limpar cookies). Isso também é imposto **no banco**: as policies de dono exigem `tenants.active`, e a dona só lê a própria linha de `tenants` (para o app distinguir "sem acesso" de "não logada"). Ela também só atualiza as colunas de perfil, então não muda o próprio subdomínio nem se reativa.
+- O link de recuperação de senha usa origem fixa (`NEXT_PUBLIC_PANEL_URL`), nunca o header `Host`. O Supabase precisa ter `<origem>/auth/callback` na lista de Redirect URLs (Authentication → URL Configuration).
+
 ## Notificação
 
 Server Action/rota que cria ou cancela um agendamento dispara, de forma síncrona ou via fire-and-forget, uma chamada à API do Resend enviando o e-mail para o endereço cadastrado da profissional daquele tenant.
@@ -80,7 +87,9 @@ beautly/
 │   │                   ├── page.tsx     # ver detalhes + cancelar
 │   │                   └── actions.ts   # server action: cancelar (valida token, service role key)
 │   │
-│   ├── login/page.tsx                   # FORA do grupo (painel): evita loop de redirect
+│   ├── login/                           # FORA do grupo (painel): evita loop de redirect (page + server action)
+│   ├── esqueci-senha/, redefinir-senha/ # recuperação de senha (fluxo PKCE nativo do Supabase Auth)
+│   ├── auth/{callback,logout,blocked}/  # route handlers: troca do código do e-mail, logout e sessão sem acesso
 │   ├── (painel)/
 │   │   ├── layout.tsx                   # guarda de sessão (Supabase Auth) — só envolve as rotas abaixo
 │   │   ├── agendamentos/page.tsx        # lista cronológica

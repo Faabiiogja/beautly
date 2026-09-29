@@ -18,3 +18,10 @@ export function extractSubdomain(host: string | null, rootDomain: string): strin
   if (!VALID_LABEL.test(subdomain) || RESERVED.has(subdomain)) return null
   return subdomain
 }
+
+// true se o host é o subdomínio compartilhado do painel das profissionais.
+export function isPanelHost(host: string | null, rootDomain: string): boolean {
+  if (!host) return false
+  const hostname = host.toLowerCase().split(':')[0].replace(/\.$/, '')
+  return hostname === `painel.${rootDomain.toLowerCase()}`
+}
