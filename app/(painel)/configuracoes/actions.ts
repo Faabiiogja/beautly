@@ -65,7 +65,8 @@ export async function saveSettings(_prev: SettingsFormState, formData: FormData)
     return { error: 'Não foi possível salvar as configurações. Tente novamente.', values }
   }
 
-  // Só apaga o logo antigo depois de o novo estar salvo
+  // Só apaga o logo antigo depois de o novo estar salvo. Melhor esforço: se a remoção falhar sobra um
+  // arquivo órfão na pasta do próprio tenant, sem efeito visível.
   if (oldPath && logo_url !== undefined) await supabase.storage.from(LOGO_BUCKET).remove([oldPath])
 
   revalidatePath('/configuracoes')

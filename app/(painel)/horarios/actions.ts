@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { requirePanelSession } from '@/lib/auth/dal'
+import { isUuid } from '@/lib/ids'
 import { todayInSaoPaulo } from '@/lib/dates'
 import { validateBlockedDay, validateWeek, type DayInput } from '@/lib/hours'
 import { createClient } from '@/lib/supabase/server'
@@ -14,8 +15,6 @@ export type WeekFormState = {
 }
 
 export type BlockedDayState = { error?: string; savedAt?: number }
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export async function saveWorkingHours(_prev: WeekFormState, formData: FormData): Promise<WeekFormState> {
   const tenant = await requirePanelSession()
@@ -57,7 +56,7 @@ export async function addBlockedDay(_prev: BlockedDayState, formData: FormData):
 export async function removeBlockedDay(formData: FormData): Promise<void> {
   const tenant = await requirePanelSession()
   const id = String(formData.get('id') ?? '')
-  if (!UUID.test(id)) return
+  if (!isUuid(id)) return
 
   const supabase = await createClient()
   await supabase.from('blocked_days').delete().eq('id', id).eq('tenant_id', tenant.id)

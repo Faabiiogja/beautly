@@ -51,6 +51,17 @@ describe('isolamento por tenant', () => {
     expect((await db.query(`select 1 from storage.objects where name = $1`, [`${bia}/logo-1.png`])).rowCount).toBe(1)
   })
 
+  it('só aceita nomes no padrão logo-<timestamp>.<ext>, sem subpastas', async () => {
+    for (const name of [`${ana}/qualquer.png`, `${ana}/sub/logo-1.png`, `${ana}/logo-1.svg`, `${ana}/logo-x.png`]) {
+      await as(db, 'authenticated', ana, async () => {
+        await expect(put(name)).rejects.toMatchObject({ code: '42501' })
+      })
+    }
+    await as(db, 'authenticated', ana, async () => {
+      await put(`${ana}/logo-1727587200000.webp`)
+    })
+  })
+
   it('não move o próprio arquivo para a pasta de outro tenant', async () => {
     await as(db, 'authenticated', ana, async () => {
       await expect(db.query(`update storage.objects set name = $1 where name = $2`, [`${bia}/x.png`, `${ana}/logo-1.png`])).rejects.toMatchObject({ code: '42501' })

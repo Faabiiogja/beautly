@@ -42,6 +42,11 @@ export function logoPathFromUrl(url: string | null, tenantId: string): string | 
   const marker = `/storage/v1/object/public/${LOGO_BUCKET}/`
   const index = url.indexOf(marker)
   if (index === -1) return null
-  const path = decodeURIComponent(url.slice(index + marker.length).split('?')[0])
+  let path: string
+  try {
+    path = decodeURIComponent(url.slice(index + marker.length).split('?')[0])
+  } catch {
+    return null // URL com % malformado: não há objeto a apagar
+  }
   return path.startsWith(`${tenantId}/`) && !path.includes('..') ? path : null
 }

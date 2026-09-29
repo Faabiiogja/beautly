@@ -55,5 +55,6 @@ describe('logoPathFromUrl', () => {
     expect(logoPathFromUrl('https://outro.com/logo.png', tenant)).toBeNull()
     expect(logoPathFromUrl('https://x.supabase.co/storage/v1/object/public/logos/outro-tenant/logo.png', tenant)).toBeNull()
     expect(logoPathFromUrl(null, tenant)).toBeNull()
+    expect(logoPathFromUrl(`https://x.supabase.co/storage/v1/object/public/logos/${tenant}/%E0%A4%A.png`, tenant)).toBeNull()
   })
 })

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { requirePanelSession } from '@/lib/auth/dal'
+import { isUuid } from '@/lib/ids'
 import { validateService, type ServiceErrors } from '@/lib/services'
 import { createClient } from '@/lib/supabase/server'
 
@@ -12,8 +13,6 @@ export type ServiceFormState = {
   // muda a cada salvamento com sucesso: usado como `key` para limpar o formulário
   savedAt?: number
 }
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 function readForm(formData: FormData) {
   return {
@@ -44,7 +43,7 @@ export async function updateService(_prev: ServiceFormState, formData: FormData)
   const id = String(formData.get('id') ?? '')
   const parsed = validateService(values)
   if (!parsed.ok) return { fieldErrors: parsed.errors, values }
-  if (!UUID.test(id)) return { error: 'Serviço não encontrado.', values }
+  if (!isUuid(id)) return { error: 'Serviço não encontrado.', values }
 
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -62,7 +61,7 @@ export async function updateService(_prev: ServiceFormState, formData: FormData)
 export async function setServiceActive(formData: FormData): Promise<void> {
   const tenant = await requirePanelSession()
   const id = String(formData.get('id') ?? '')
-  if (!UUID.test(id)) return
+  if (!isUuid(id)) return
   const active = formData.get('active') === 'true'
 
   const supabase = await createClient()

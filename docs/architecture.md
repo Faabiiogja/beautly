@@ -105,6 +105,9 @@ beautly/
 │   │   ├── client.ts                    # client de browser (login)
 │   │   └── service-role.ts              # client com service role key (rotas públicas)
 │   ├── availability.ts                  # cálculo da grade de horários disponíveis (cuidado com fuso — ver acima)
+│   ├── dates.ts, hours.ts               # datas em America/Sao_Paulo; validação de expediente e dias bloqueados
+│   ├── services.ts, settings.ts         # validação de serviços (preço/duração) e das configurações + logo
+│   ├── auth/                            # DAL (dal.ts, access.ts), validação e motivos de redirect
 │   ├── tenants.ts                       # resolve tenant público por subdomínio
 │   ├── phone.ts                         # validação de telefone brasileiro
 │   └── email.ts                         # chamada à API do Resend
