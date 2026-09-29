@@ -17,5 +17,5 @@ export default async function AppointmentPage({ params, searchParams }: PageProp
   const h = await headers()
   const host = h.get('host') ?? ''
   const proto = h.get('x-forwarded-proto') ?? (host.startsWith('localhost') || host.includes('.localhost') ? 'http' : 'https')
-  return <AppointmentView appointment={appointment} isNew={novo === '1'} link={`${proto}://${host}/agendamento/${token}`} />
+  return <AppointmentView appointment={appointment} isNew={novo === '1'} link={`${proto}://${host}/agendamento/${token}`} token={token} />
 }

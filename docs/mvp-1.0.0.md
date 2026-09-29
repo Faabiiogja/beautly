@@ -30,7 +30,7 @@ Profissional autônoma de estética que:
 Acessa `<subdominio>.beautly.cloud` → escolhe serviço → escolhe data → escolhe horário disponível daquele dia → informa nome e telefone (com máscara) → confirma → vê tela de confirmação com link único.
 
 **J2 — Cliente cancela um agendamento**
-Reabre o link do agendamento (a qualquer momento, antes ou depois do horário) → cancela → horário é liberado imediatamente na agenda.
+Reabre o link do agendamento (a qualquer momento, antes ou depois do horário) → cancela → horário é liberado imediatamente na agenda. O link sempre abre e mostra o status real; o cancelamento só é oferecido enquanto o agendamento não terminou (depois disso, cancelar não liberaria nada e apagaria o registro do que aconteceu: o link mostra "Já aconteceu").
 
 **J3 — Profissional configura o negócio pela primeira vez**
 Recebe login (criado manualmente pelo founder) → acessa painel → cadastra serviços → configura horário de funcionamento por dia da semana → preenche dados do negócio (nome, logo, telefone, endereço, descrição) → compartilha o link da própria página com suas clientes.

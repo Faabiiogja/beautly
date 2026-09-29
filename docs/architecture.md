@@ -86,11 +86,11 @@ beautly/
 │   │       └── [subdomain]/             # alvo do rewrite do proxy — namespace isolado do apex/painel
 │   │           ├── page.tsx             # negócio + serviços + seleção de data/horário
 │   │           ├── slots/route.ts       # GET horários livres (só intervalos ocupados via service role; nunca dados de cliente)
-│   │           ├── actions.ts           # server actions: criar agendamento (service role key) — ainda não existe
+│   │           ├── appointments/route.ts # POST criar agendamento (service role key; teto de 3 futuros por telefone no banco)
 │   │           └── agendamento/
 │   │               └── [token]/
 │   │                   ├── page.tsx     # ver detalhes + cancelar
-│   │                   └── actions.ts   # server action: cancelar (valida token, service role key)
+│   │                   └── cancel/route.ts # POST cancelar pelo token (service role key; só confirmado que não terminou)
 │   │
 │   ├── login/                           # FORA do grupo (painel): evita loop de redirect (page + server action)
 │   ├── esqueci-senha/, redefinir-senha/ # recuperação de senha (fluxo PKCE nativo do Supabase Auth)

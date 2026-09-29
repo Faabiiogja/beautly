@@ -1,20 +1,15 @@
+import Link from 'next/link'
 import type { AppointmentView as Appointment } from '@/lib/appointment-data'
+import { canCancel, displayStatus } from '@/lib/appointment-status'
+import type { DisplayStatus } from '@/lib/appointment-status'
 import { formatLongDate, toLocalDayAndTime } from '@/lib/dates'
 import { formatDuration, formatPrice } from '@/lib/format'
 import { formatPhone } from '@/lib/phone'
+import { CancelAppointment } from './CancelAppointment'
 import { CopyLinkButton } from './CopyLinkButton'
 import { Shell } from './Shell'
 
-type Display = 'confirmed' | 'cancelled' | 'past'
-
-// Estado que a cliente vê: um confirmado que já passou aparece como "já aconteceu"
-// (não existe estado armazenado para isso).
-export function displayStatus(appointment: Pick<Appointment, 'status' | 'end_time'>, now: Date): Display {
-  if (appointment.status === 'cancelled') return 'cancelled'
-  return new Date(appointment.end_time) <= now ? 'past' : 'confirmed'
-}
-
-const BADGE: Record<Display, { label: string; className: string }> = {
+const BADGE: Record<DisplayStatus, { label: string; className: string }> = {
   confirmed: { label: 'Confirmado', className: 'bg-brand-tint text-brand' },
   cancelled: { label: 'Cancelado', className: 'bg-danger-tint text-danger' },
   past: { label: 'Já aconteceu', className: 'bg-subtle text-muted' },
@@ -24,11 +19,13 @@ export function AppointmentView({
   appointment,
   isNew,
   link,
+  token,
   now = new Date(),
 }: {
   appointment: Appointment
   isNew: boolean
   link: string
+  token: string
   now?: Date
 }) {
   const status = displayStatus(appointment, now)
@@ -80,6 +77,17 @@ export function AppointmentView({
             <dd className="text-ink">{formatPhone(appointment.business.phone)}</dd>
           </div>
         </dl>
+
+        {status === 'cancelled' && (
+          <section className="flex flex-col items-center gap-3 rounded-card bg-container-low p-4 text-center">
+            <p className="text-sm text-muted">O horário foi liberado. Você pode marcar um novo quando quiser.</p>
+            <Link href="/" className="flex h-12 w-full items-center justify-center rounded-full bg-brand text-label-lg text-on-brand">
+              Fazer um novo agendamento
+            </Link>
+          </section>
+        )}
+
+        {canCancel(appointment, now) && <CancelAppointment token={token} />}
 
         <section aria-labelledby="link" className="flex flex-col gap-3 rounded-card bg-container-low p-4">
           <h2 id="link" className="font-headline text-headline-sm text-ink">

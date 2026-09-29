@@ -1,19 +1,9 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import type { NextRequest } from 'next/server'
 import { createBooking } from '@/lib/booking'
 import { validateBooking } from '@/lib/booking-validation'
+import { isSameOrigin, json } from '@/lib/http'
 
 const MAX_BODY_BYTES = 4096
-const NO_STORE = { 'Cache-Control': 'no-store' }
-const json = (body: object, status: number) => NextResponse.json(body, { status, headers: NO_STORE })
-
-function isSameHost(origin: string, host: string | null): boolean {
-  if (!host) return false
-  try {
-    return new URL(origin).host.toLowerCase() === host.toLowerCase()
-  } catch {
-    return false
-  }
-}
 
 // POST /appointments  (no subdomínio do tenant, via rewrite do proxy)
 // Corpo JSON: { serviceId, day, time, name, phone }. O tenant é o do subdomínio da requisição,
@@ -22,10 +12,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { subdomain } = await params
 
   if (!request.headers.get('content-type')?.includes('application/json')) return json({ error: 'unsupported_media_type' }, 415)
-  // Barra formulários de outros sites: se o browser informou a origem, ela tem que ser o próprio host.
-  // "Origin: null" (iframe com sandbox, data:) e valores que não são URL também são recusados.
+  // Barra formulários de outros sites (ver lib/http.ts).
   const origin = request.headers.get('origin')
-  if (origin !== null && !isSameHost(origin, request.headers.get('host'))) return json({ error: 'forbidden' }, 403)
+  if (!isSameOrigin(origin, request.headers.get('host'))) return json({ error: 'forbidden' }, 403)
   // O corpo legítimo tem poucas centenas de bytes.
   if (Number(request.headers.get('content-length') ?? 0) > MAX_BODY_BYTES) return json({ error: 'payload_too_large' }, 413)
 

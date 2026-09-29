@@ -1,7 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server'
-import { describe, expect, it } from 'vitest'
-import { AppointmentView, displayStatus } from '@/components/public/AppointmentView'
+import { describe, expect, it, vi } from 'vitest'
+import { AppointmentView } from '@/components/public/AppointmentView'
 import type { AppointmentView as Appointment } from '@/lib/appointment-data'
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: () => {} }) }))
 
 const appointment: Appointment = {
   status: 'confirmed',
@@ -17,16 +19,7 @@ const before = new Date('2026-10-01T12:00:00Z')
 const after = new Date('2026-10-06T12:00:00Z')
 const link = 'https://ana.beautly.cloud/agendamento/abc'
 const html = (over: Partial<Appointment> = {}, isNew = false, now = before) =>
-  renderToStaticMarkup(<AppointmentView appointment={{ ...appointment, ...over }} isNew={isNew} link={link} now={now} />)
-
-describe('displayStatus', () => {
-  it('confirmado futuro, confirmado que já passou e cancelado', () => {
-    expect(displayStatus(appointment, before)).toBe('confirmed')
-    expect(displayStatus(appointment, after)).toBe('past')
-    expect(displayStatus({ ...appointment, status: 'cancelled' }, before)).toBe('cancelled')
-    expect(displayStatus({ ...appointment, status: 'cancelled' }, after)).toBe('cancelled')
-  })
-})
+  renderToStaticMarkup(<AppointmentView appointment={{ ...appointment, ...over }} isNew={isNew} link={link} token="abc" now={now} />)
 
 describe('AppointmentView', () => {
   it('mostra os detalhes no horário de São Paulo, com o link', () => {
@@ -46,6 +39,18 @@ describe('AppointmentView', () => {
     expect(html({ status: 'cancelled' }, true)).toContain('Cancelado')
     expect(html({ status: 'cancelled' }, true)).not.toContain('Tudo certo')
     expect(html({}, true, after)).toContain('Já aconteceu')
+  })
+
+  it('mostra o botão de cancelar só para confirmado que ainda não terminou', () => {
+    expect(html()).toContain('Cancelar agendamento')
+    expect(html({ status: 'cancelled' })).not.toContain('Cancelar agendamento')
+    expect(html({}, false, after)).not.toContain('Cancelar agendamento')
+  })
+
+  it('cancelado oferece um novo agendamento e avisa que o horário foi liberado', () => {
+    const out = html({ status: 'cancelled' })
+    expect(out).toContain('O horário foi liberado')
+    expect(out).toContain('Fazer um novo agendamento')
   })
 
   it('não expõe o telefone da cliente, só o do estúdio', () => {

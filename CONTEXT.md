@@ -18,7 +18,7 @@
 
 - Cliente pode cancelar o próprio agendamento via link, sem necessidade de autorização da profissional.
 - Cancelamento (por cliente ou profissional) libera o horário na agenda imediatamente.
-- Não há janela mínima de antecedência exigida para cancelamento na 1.0.0.
+- Não há janela mínima de antecedência exigida para cancelamento na 1.0.0. Só se cancela um agendamento que ainda não terminou (inclusive um em andamento); depois do horário o link apenas mostra "Já aconteceu", e a API recusa o cancelamento (409).
 - Não há reagendamento como funcionalidade — apenas cancelar + criar novo.
 - Não há rastreamento de no-show em nenhuma versão futura definida até agora (decisão explícita do produto, não apenas adiada).
 - Link de agendamento não expira ativamente: continua acessível e mostra o status real do agendamento (confirmado/cancelado/já ocorrido) a qualquer momento, mesmo após o horário. Nenhuma lógica de expiração é construída na 1.0.0.
