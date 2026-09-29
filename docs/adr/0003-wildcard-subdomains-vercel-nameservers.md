@@ -1,0 +1,3 @@
+# Subdomínios por tenant via nameservers da Vercel
+
+Cada tenant precisa de um subdomínio próprio (`<tenant>.beautly.cloud`) com SSL automático. A Vercel suporta wildcard domains (`*.beautly.cloud`) em qualquer plano, inclusive Hobby, mas exige apontar os nameservers do domínio para `ns1.vercel-dns.com`/`ns2.vercel-dns.com`, pois é assim que ela emite o certificado wildcard automaticamente. Consideramos gerenciar certificados/CNAMEs manualmente por tenant fora da Vercel, mas isso reintroduziria trabalho manual por tenant — exatamente o tipo de esforço que o projeto quer evitar. Optamos por migrar os nameservers do domínio para a Vercel.

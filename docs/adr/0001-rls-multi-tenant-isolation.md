@@ -1,0 +1,3 @@
+# Isolamento multi-tenant via Row Level Security do Postgres
+
+Precisávamos garantir que dados de um tenant nunca vazem para outro. Consideramos schema (ou banco) Postgres separado por tenant versus um schema único com coluna `tenant_id` em cada tabela e isolamento via Row Level Security (RLS). Escolhemos RLS: é o padrão idiomático do Supabase, escala sem esforço de gestão de N schemas/migrations replicadas, e o isolamento é aplicado pelo próprio Postgres em toda query, não por disciplina da aplicação. Schema por tenant só se justificaria com exigência de isolamento físico, que não é o caso do Beautly.

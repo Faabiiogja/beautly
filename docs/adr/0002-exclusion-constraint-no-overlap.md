@@ -1,0 +1,3 @@
+# Não sobreposição de agendamentos via exclusion constraint
+
+A regra de negócio exige que dois agendamentos confirmados nunca se sobreponham no mesmo tenant, mesmo sob concorrência (duas clientes confirmando o mesmo horário ao mesmo tempo). Consideramos resolver isso só na aplicação (transação + verificação de conflito antes de inserir) versus garantir no próprio banco com uma `EXCLUDE USING gist` constraint (extensão `btree_gist`) sobre `(tenant_id, tsrange(start_time, end_time))` filtrada por `status = 'confirmed'`. Escolhemos a constraint no banco: a garantia é absoluta e independe de todo caminho de código que venha a inserir um agendamento (app, script manual, função serverless futura) — a regra vive no dado, não em um `if` que pode ser esquecido.
