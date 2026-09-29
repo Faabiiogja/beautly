@@ -99,7 +99,9 @@ describe('visitante anônimo (página pública)', () => {
 
   it('nunca lê agendamentos, nem escreve neles', async () => {
     await as(db, 'anon', null, async () => {
-      expect(await count('appointments')).toBe(0)
+      await expect(db.query('select 1 from appointments')).rejects.toMatchObject({ code: '42501' })
+    })
+    await as(db, 'anon', null, async () => {
       await expect(insertAppointment(db, ana, anaService, '2026-10-06T13:00Z', '2026-10-06T14:00Z')).rejects.toMatchObject({
         code: '42501',
       })
@@ -107,12 +109,13 @@ describe('visitante anônimo (página pública)', () => {
   })
 
   it('não consegue alterar nem apagar nada', async () => {
-    await as(db, 'anon', null, async () => {
-      for (const table of ['tenants', 'services', 'working_hours', 'blocked_days']) {
-        expect((await db.query(`update ${table} set created_at = now()`)).rowCount).toBe(0)
-        expect((await db.query(`delete from ${table}`)).rowCount).toBe(0)
+    for (const table of ['tenants', 'services', 'working_hours', 'blocked_days']) {
+      for (const sql of [`update ${table} set created_at = now()`, `delete from ${table}`]) {
+        await as(db, 'anon', null, async () => {
+          await expect(db.query(sql)).rejects.toMatchObject({ code: '42501' })
+        })
       }
-    })
+    }
   })
 
   it('não vê tenant inativo nem o que pertence a ele', async () => {

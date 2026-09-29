@@ -15,6 +15,4 @@ create function auth.uid() returns uuid
   as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
 
 grant usage on schema auth to anon, authenticated, service_role;
-grant usage on schema public to anon, authenticated, service_role;
-alter default privileges in schema public
-  grant all on tables to anon, authenticated, service_role;
+-- Sem default privileges de propósito: os grants reais vêm das migrations (como no projeto Supabase).
