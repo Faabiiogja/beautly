@@ -4,9 +4,9 @@ import { getPanelAccess } from '@/lib/auth/dal'
 import { REASON } from '@/lib/auth/reasons'
 import { LoginForm } from './LoginForm'
 
-const NOTICES: Record<string, string> = {
-  [REASON.unavailable]: 'Seu acesso não está disponível no momento.',
-  [REASON.passwordChanged]: 'Senha alterada. Entre com a nova senha.',
+const NOTICES: Record<string, { text: string; tone: 'info' | 'success' }> = {
+  [REASON.unavailable]: { text: 'Seu acesso não está disponível no momento.', tone: 'info' },
+  [REASON.passwordChanged]: { text: 'Senha alterada. Entre com a nova senha.', tone: 'success' },
 }
 
 // Fica FORA do route group (painel): o layout guardado redireciona para cá, então cair aqui
