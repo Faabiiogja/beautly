@@ -14,7 +14,10 @@ export async function requestPasswordReset(_prev: ResetRequestState, formData: F
   if (!parsed.ok) return { error: parsed.error }
 
   const supabase = await createClient()
-  // O resultado não é exposto: a resposta é igual para e-mail cadastrado ou não.
-  await supabase.auth.resetPasswordForEmail(parsed.value, { redirectTo: `${PANEL_URL}/auth/callback` })
+  // A pessoa vê sempre a mesma mensagem (igual para e-mail cadastrado ou não). Mas uma falha de envio, como o
+  // SMTP recusando as credenciais, precisa aparecer no log do servidor; sem isso só seria descoberta nos
+  // logs de autenticação do Supabase.
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.value, { redirectTo: `${PANEL_URL}/auth/callback` })
+  if (error) console.error('esqueci-senha: falha ao pedir a recuperação', { status: error.status, code: error.code, message: error.message })
   return { sent: true }
 }
