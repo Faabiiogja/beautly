@@ -1,16 +1,19 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import type { SlotGroup } from '@/lib/availability'
 import { dayChipParts, formatLongDate } from '@/lib/dates'
 import { formatDuration, formatPrice } from '@/lib/format'
 import type { PublicService } from '@/lib/tenants'
+import { BookingForm } from './BookingForm'
 import { ClockIcon } from './icons'
 
 type Day = { day: string; open: boolean }
 type SlotsState = { status: 'idle' } | { status: 'loading' } | { status: 'error' } | { status: 'ok'; groups: SlotGroup[] }
 
 export function BookingFlow({ services, days }: { services: PublicService[]; days: Day[] }) {
+  const router = useRouter()
   const [serviceId, setServiceId] = useState<string | null>(null)
   const [day, setDay] = useState<string | null>(null)
   const [slot, setSlot] = useState<string | null>(null)
@@ -18,6 +21,8 @@ export function BookingFlow({ services, days }: { services: PublicService[]; day
   const [attempt, setAttempt] = useState(0) // muda a cada "tentar novamente" para refazer a busca
   const dateRef = useRef<HTMLElement>(null)
   const timeRef = useRef<HTMLElement>(null)
+  const formRef = useRef<HTMLDivElement>(null)
+  const [slotTaken, setSlotTaken] = useState(false)
 
   useEffect(() => {
     if (!serviceId || !day) return
@@ -56,12 +61,14 @@ export function BookingFlow({ services, days }: { services: PublicService[]; day
     setServiceId(id)
     setDay(null)
     setSlot(null)
+    setSlotTaken(false)
     setSlots({ status: 'idle' })
     requestAnimationFrame(() => dateRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
   const pickDay = (value: string) => {
     setDay(value)
     setSlot(null)
+    setSlotTaken(false)
     setSlots({ status: 'loading' })
     requestAnimationFrame(() => timeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
@@ -163,6 +170,11 @@ export function BookingFlow({ services, days }: { services: PublicService[]; day
             <p className="text-sm text-muted">{formatLongDate(day)}</p>
           </div>
 
+          {slotTaken && (
+            <p role="alert" className="rounded-card bg-danger-tint px-4 py-3 text-sm text-danger">
+              Esse horário não está mais disponível (talvez outra pessoa tenha acabado de reservar). Escolha outro abaixo.
+            </p>
+          )}
           {slots.status === 'loading' && <p className="rounded-card bg-subtle p-6 text-center text-muted">Buscando horários…</p>}
           {slots.status === 'error' && (
             <div role="alert" className="flex flex-col items-center gap-3 rounded-card bg-danger-tint p-6 text-center text-danger">
@@ -202,7 +214,11 @@ export function BookingFlow({ services, days }: { services: PublicService[]; day
                         <button
                           type="button"
                           aria-pressed={selected}
-                          onClick={() => setSlot(time)}
+                          onClick={() => {
+                            setSlot(time)
+                            setSlotTaken(false)
+                            requestAnimationFrame(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+                          }}
                           className={`flex h-14 w-full items-center justify-between rounded-card px-4 font-headline text-headline-sm shadow-soft transition active:scale-95 ${
                             selected ? 'bg-brand text-on-brand' : 'bg-card text-ink'
                           }`}
@@ -217,6 +233,26 @@ export function BookingFlow({ services, days }: { services: PublicService[]; day
               </div>
             ))}
         </section>
+      )}
+
+      {service && day && slot && (
+        <div ref={formRef} className="scroll-mt-4 px-5 pb-10">
+          <BookingForm
+            key={`${service.id}-${day}-${slot}`}
+            service={service}
+            day={day}
+            time={slot}
+            onCreated={(token) => router.push(`/agendamento/${token}?novo=1`)}
+            onSlotTaken={() => {
+              // volta para a escolha de horário com a lista atualizada
+              setSlot(null)
+              setSlotTaken(true)
+              setSlots({ status: 'loading' })
+              setAttempt((n) => n + 1)
+              requestAnimationFrame(() => timeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+            }}
+          />
+        </div>
       )}
     </div>
   )

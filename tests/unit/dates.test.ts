@@ -84,3 +84,14 @@ describe('isRealDay', () => {
     expect(isRealDay('')).toBe(false)
   })
 })
+
+import { toLocalDayAndTime } from '@/lib/dates'
+
+describe('toLocalDayAndTime', () => {
+  it('converte um instante UTC para dia e hora locais de São Paulo', () => {
+    expect(toLocalDayAndTime(new Date('2026-10-05T13:30:00Z'))).toEqual({ day: '2026-10-05', time: '10:30' })
+    // 02:30Z ainda é o dia anterior em São Paulo
+    expect(toLocalDayAndTime(new Date('2026-10-06T02:30:00Z'))).toEqual({ day: '2026-10-05', time: '23:30' })
+    expect(toLocalDayAndTime(new Date('2026-10-06T03:00:00Z'))).toEqual({ day: '2026-10-06', time: '00:00' })
+  })
+})

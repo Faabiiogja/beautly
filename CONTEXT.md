@@ -8,7 +8,7 @@
 
 **Cliente**: pessoa que realiza um agendamento na página pública de um tenant. Não possui conta, senha ou verificação de identidade. É identificada apenas por **nome** e **telefone**, informados no momento do agendamento (sem validação de que o telefone pertence de fato a ela).
 
-**Link de agendamento**: URL única gerada para cada agendamento (ex: `ana.beautly.cloud/agendamento/abc123`), que permite à cliente visualizar os detalhes e cancelar, sem necessidade de login. Funciona até o horário do agendamento; após esse horário pode deixar de funcionar (comportamento exato ainda em definição).
+**Link de agendamento**: URL única gerada para cada agendamento (ex: `ana.beautly.cloud/agendamento/abc123`), que permite à cliente visualizar os detalhes e cancelar, sem necessidade de login. Não expira ativamente: continua acessível e mostra o status real (confirmado, cancelado ou já ocorrido) a qualquer momento, mesmo após o horário. Só deixa de abrir se o tenant estiver inativo.
 
 **Agendamento**: reserva de um serviço, com um profissional, em uma data/horário específico, feita por uma cliente. Estados: **Confirmado**, **Cancelado**. Não existe (e não existirá) o estado "No-show" — decisão permanente, não é apenas escopo do MVP.
 

@@ -78,3 +78,9 @@ export function isRealDay(day: string): boolean {
   const date = new Date(Date.UTC(y, m - 1, d))
   return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d
 }
+
+// Instante UTC -> { day: 'YYYY-MM-DD', time: 'HH:MM' } no relógio local de São Paulo.
+export function toLocalDayAndTime(instant: Date): { day: string; time: string } {
+  const p = Object.fromEntries(zonedParts.formatToParts(instant).map((part) => [part.type, part.value]))
+  return { day: `${p.year}-${p.month}-${p.day}`, time: `${p.hour}:${p.minute}` }
+}

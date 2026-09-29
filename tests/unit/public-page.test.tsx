@@ -1,7 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { BusinessPage } from '@/components/public/BusinessPage'
 import { Unavailable } from '@/components/public/Unavailable'
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: () => {} }) }))
 
 const tenant = {
   business_name: 'Studio da Ana',

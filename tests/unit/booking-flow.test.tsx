@@ -4,9 +4,14 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { BookingFlow } from '@/components/public/BookingFlow'
 
+const push = vi.fn()
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }))
+
+const S1 = '11111111-1111-1111-1111-111111111111'
+const S2 = '22222222-2222-2222-2222-222222222222'
 const services = [
-  { id: 's1', name: 'Manicure', price_cents: 5000, duration_minutes: 60 },
-  { id: 's2', name: 'Pedicure', price_cents: 6500, duration_minutes: 90 },
+  { id: S1, name: 'Manicure', price_cents: 5000, duration_minutes: 60 },
+  { id: S2, name: 'Pedicure', price_cents: 6500, duration_minutes: 90 },
 ]
 const days = [
   { day: '2026-09-29', open: true },
@@ -56,7 +61,7 @@ describe('BookingFlow', () => {
     await userEvent.click(screen.getByRole('button', { name: /Manicure/ }))
     await userEvent.click(screen.getByRole('button', { name: /29\/09\/2026/ }))
 
-    expect(fetchMock).toHaveBeenCalledWith('/slots?service=s1&day=2026-09-29', expect.anything())
+    expect(fetchMock).toHaveBeenCalledWith(`/slots?service=${S1}&day=2026-09-29`, expect.anything())
     const morning = await screen.findByRole('heading', { name: 'Manhã' })
     expect(morning).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Tarde' })).toBeTruthy()
@@ -104,6 +109,40 @@ describe('BookingFlow', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
     expect(await screen.findByRole('button', { name: '09:00' })).toBeTruthy()
     expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('escolher um horário abre o formulário de dados; trocar de horário mantém um só formulário', async () => {
+    render(<BookingFlow services={services} days={days} />)
+    await userEvent.click(screen.getByRole('button', { name: /Manicure/ }))
+    await userEvent.click(screen.getByRole('button', { name: /29\/09\/2026/ }))
+    await screen.findByRole('button', { name: '09:00' })
+    expect(screen.queryByLabelText('Seu nome completo')).toBeNull()
+
+    await userEvent.click(screen.getByRole('button', { name: '09:00' }))
+    expect(screen.getByLabelText('Seu nome completo')).toBeTruthy()
+    expect(screen.getByText(/às 09:00/)).toBeTruthy()
+    await userEvent.click(screen.getByRole('button', { name: '14:00' }))
+    expect(screen.getAllByLabelText('Seu nome completo')).toHaveLength(1)
+    expect(screen.getByText(/às 14:00/)).toBeTruthy()
+  })
+
+  it('horário tomado por outra cliente: avisa, limpa a escolha e recarrega os horários', async () => {
+    fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+      if (init?.method === 'POST') return new Response(JSON.stringify({ error: 'slot_taken' }), { status: 409 })
+      return new Response(JSON.stringify({ groups }), { status: 200 })
+    })
+    render(<BookingFlow services={services} days={days} />)
+    await userEvent.click(screen.getByRole('button', { name: /Manicure/ }))
+    await userEvent.click(screen.getByRole('button', { name: /29\/09\/2026/ }))
+    await userEvent.click(await screen.findByRole('button', { name: '09:00' }))
+    await userEvent.type(screen.getByLabelText('Seu nome completo'), 'Maria')
+    await userEvent.type(screen.getByLabelText('Seu WhatsApp / telefone'), '11999990000')
+    await userEvent.click(screen.getByRole('button', { name: 'Confirmar agendamento' }))
+
+    expect(await screen.findByText(/não está mais disponível/)).toBeTruthy()
+    expect(screen.queryByLabelText('Seu nome completo')).toBeNull()
+    const slotFetches = fetchMock.mock.calls.filter(([, init]) => init?.method !== 'POST')
+    expect(slotFetches.length).toBeGreaterThanOrEqual(2) // busca inicial + recarga
   })
 
   it('trocar de serviço limpa data, horários e seleção', async () => {

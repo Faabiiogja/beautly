@@ -17,3 +17,14 @@ export function formatPhone(value: string): string {
   if (digits.length === 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
   return value
 }
+
+// Máscara de digitação: "11999990000" -> "(11) 99999-0000". Até 10 dígitos usa 4-4 (fixo);
+// o 11º dígito passa para 5-4 (celular). Ignora tudo que não é dígito e corta em 11.
+export function maskPhone(raw: string): string {
+  const d = raw.replace(/\D/g, '').slice(0, 11)
+  if (d.length === 0) return ''
+  if (d.length <= 2) return `(${d}`
+  const split = d.length === 11 ? 7 : 6
+  const head = `(${d.slice(0, 2)}) ${d.slice(2, Math.min(split, d.length))}`
+  return d.length > split ? `${head}-${d.slice(split)}` : head
+}
