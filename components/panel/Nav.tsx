@@ -7,6 +7,7 @@ const ITEMS = [
   { href: '/agendamentos', label: 'Agendamentos' },
   { href: '/servicos', label: 'Serviços' },
   { href: '/horarios', label: 'Horários' },
+  { href: '/configuracoes', label: 'Configurações' },
 ]
 
 export function Nav() {

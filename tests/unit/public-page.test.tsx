@@ -18,7 +18,7 @@ const services = [
 describe('BusinessPage', () => {
   it('mostra os dados do negócio e os serviços', () => {
     const html = renderToStaticMarkup(<BusinessPage tenant={tenant} services={services} />)
-    for (const text of ['Studio da Ana', '11999999999', 'Rua das Flores, 10', 'Manicure e nail art', 'Manicure', 'Pedicure', '1h30']) {
+    for (const text of ['Studio da Ana', '(11) 99999-9999', 'Rua das Flores, 10', 'Manicure e nail art', 'Manicure', 'Pedicure', '1h30']) {
       expect(html).toContain(text)
     }
     expect(html).toContain('R$')

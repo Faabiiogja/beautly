@@ -1,4 +1,5 @@
 import { formatDuration, formatPrice } from '@/lib/format'
+import { formatPhone } from '@/lib/phone'
 import type { PublicService, PublicTenant } from '@/lib/tenants'
 import { BrandEmblem } from './BrandEmblem'
 import { ChatIcon, ClockIcon, PinIcon } from './icons'
@@ -35,7 +36,7 @@ export function BusinessPage({ tenant, services }: { tenant: PublicTenant; servi
               <span className="text-brand">
                 <ChatIcon />
               </span>
-              {tenant.phone}
+              {formatPhone(tenant.phone)}
             </a>
             {tenant.address && (
               <div className="flex min-h-12 items-center gap-2 rounded-full bg-card px-4 text-label-sm text-muted shadow-soft">
