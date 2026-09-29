@@ -1,4 +1,5 @@
 import { requirePanelSession } from '@/lib/auth/dal'
+import { Nav } from '@/components/panel/Nav'
 import { BrandEmblem } from '@/components/public/BrandEmblem'
 
 // Guarda de sessão do painel. O layout não re-renderiza a cada navegação, então cada página e
@@ -21,6 +22,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
             </button>
           </form>
         </div>
+        <Nav />
       </header>
       <div className="mx-auto w-full max-w-[1200px] flex-1 px-4 py-6 md:px-6">{children}</div>
     </div>
