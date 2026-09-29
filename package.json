@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "e2e:migrate": "bash scripts/e2e-migrate.sh",
+    "e2e:seed": "node scripts/e2e-seed.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -19,6 +22,7 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.7",
