@@ -45,6 +45,10 @@
 - Cobrança (piloto grátis → R$30/mês) é controlada fora do sistema (ex: Pix). Não existe campo de plano, vencimento ou trial automático — apenas um estado ativo/inativo por tenant, alternado manualmente pelo admin.
 - Tenant inativo: página pública fica indisponível (mensagem genérica) e o login do painel da profissional é bloqueado. Nenhum dado é apagado.
 
+## Limite por telefone
+
+- Uma mesma cliente (mesmo telefone) pode agendar várias vezes, mas no máximo **3 agendamentos futuros confirmados por vez** em cada tenant. Cancelados e já ocorridos não contam. O limite é imposto no banco (serializado por telefone, então pedidos simultâneos também respeitam) e existe para impedir que um script ocupe a agenda inteira de uma profissional. Para marcar um 4º, a cliente cancela um pelo link.
+
 ## Concorrência
 
 - Se duas clientes tentam confirmar o mesmo horário simultaneamente, quem confirmar primeiro garante o agendamento; a segunda recebe erro e deve escolher outro horário. Nunca há sobrescrita silenciosa.

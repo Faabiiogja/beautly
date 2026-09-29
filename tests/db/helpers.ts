@@ -66,6 +66,8 @@ export async function createService(db: Client, tenantId: string, opts: { active
   return rows[0].id as string
 }
 
+const randomPhone = () => `119${String(Math.floor(Math.random() * 1e8)).padStart(8, '0')}`
+
 export async function insertAppointment(
   db: Client,
   tenantId: string,
@@ -78,7 +80,8 @@ export async function insertAppointment(
     `insert into appointments
        (tenant_id, service_id, service_name_snapshot, price_cents_snapshot, duration_minutes_snapshot,
         client_name, client_phone, start_time, end_time, status)
-     values ($1, $2, 'Manicure', 5000, 60, 'Maria', '11988888888', $3, $4, $5)`,
-    [tenantId, serviceId, start, end, status],
+     values ($1, $2, 'Manicure', 5000, 60, 'Maria', $6, $3, $4, $5)`,
+    // telefone distinto por inserção: estes helpers testam sobreposição, não o teto por telefone
+    [tenantId, serviceId, start, end, status, randomPhone()],
   )
 }

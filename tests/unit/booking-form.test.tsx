@@ -95,6 +95,16 @@ describe('BookingForm', () => {
     expect(onSlotTaken).not.toHaveBeenCalled()
   })
 
+  it('teto de 3 agendamentos (429) explica o motivo e como resolver, sem voltar para a escolha de horário', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ error: 'limit_reached' }), { status: 429 }))
+    setup()
+    await fill('Maria', '11999990000')
+    await userEvent.click(screen.getByRole('button', { name: 'Confirmar agendamento' }))
+    expect(await screen.findByText(/já tem 3 agendamentos futuros/)).toBeTruthy()
+    expect(onSlotTaken).not.toHaveBeenCalled()
+    expect((screen.getByRole('button', { name: 'Confirmar agendamento' }) as HTMLButtonElement).disabled).toBe(false)
+  })
+
   it('não envia duas vezes com clique duplo', async () => {
     let release: (r: Response) => void = () => {}
     fetchMock.mockReturnValueOnce(new Promise<Response>((resolve) => (release = resolve)))

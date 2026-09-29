@@ -46,6 +46,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const result = await createBooking({ ...parsed.value, subdomain })
     if (result.status === 'created') return json({ token: result.token }, 201)
     if (result.status === 'slot_taken') return json({ error: 'slot_taken' }, 409)
+    if (result.status === 'limit_reached') return json({ error: 'limit_reached' }, 429)
     return json({ error: 'not_found' }, 404)
   } catch (error) {
     console.error('appointments: falha ao criar agendamento', error)

@@ -3,11 +3,17 @@ import { resolveBookable, slotsFor } from '@/lib/availability-data'
 import { bookingWindow, type BookingValue } from '@/lib/booking-validation'
 import { createServiceRoleClient } from '@/lib/supabase/service-role'
 
-export type BookingResult = { status: 'created'; token: string } | { status: 'slot_taken' } | { status: 'not_found' }
+export type BookingResult =
+  | { status: 'created'; token: string }
+  | { status: 'slot_taken' }
+  | { status: 'limit_reached' }
+  | { status: 'not_found' }
 
 // Postgres: 23P01 = violação da exclusion constraint (ADR 0002); 40P01 = deadlock detectado, que
 // aparece no lugar dela quando duas inserções concorrem pelo mesmo horário. Para a cliente é o mesmo caso.
 const SLOT_TAKEN_CODES = new Set(['23P01', '40P01'])
+// SQLSTATE próprio da trigger do teto de 3 agendamentos futuros por telefone (migration client_booking_limit)
+const LIMIT_REACHED_CODE = 'BK001'
 
 // Cria o agendamento de UM serviço. O tenant vem sempre do subdomínio da requisição.
 // 1) o horário precisa estar entre os oferecidos agora (expediente, bloqueios, grade, janela e passado);
@@ -41,6 +47,7 @@ export async function createBooking(input: BookingValue & { subdomain: string },
 
   if (error) {
     if (SLOT_TAKEN_CODES.has(error.code)) return { status: 'slot_taken' }
+    if (error.code === LIMIT_REACHED_CODE) return { status: 'limit_reached' }
     throw error
   }
   return { status: 'created', token: data.token }

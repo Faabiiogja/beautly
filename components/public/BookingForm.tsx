@@ -48,6 +48,9 @@ export function BookingForm({ service, day, time, onCreated, onSlotTaken }: Prop
         if (body.token) return onCreated(body.token)
       }
       if (response.status === 409) return onSlotTaken()
+      if (response.status === 429) {
+        return setErrors({ form: 'Você já tem 3 agendamentos futuros neste estúdio. Para marcar outro, cancele um deles pelo link do agendamento.' })
+      }
       if (response.status === 404) return setErrors({ form: 'Este serviço não está mais disponível. Recarregue a página e escolha novamente.' })
       if (response.status === 400) {
         const body: { errors?: BookingErrors } = await response.json()
