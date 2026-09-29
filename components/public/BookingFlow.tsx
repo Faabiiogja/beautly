@@ -7,7 +7,7 @@ import { dayChipParts, formatLongDate } from '@/lib/dates'
 import { formatDuration, formatPrice } from '@/lib/format'
 import type { PublicService } from '@/lib/tenants'
 import { BookingForm } from './BookingForm'
-import { ClockIcon } from './icons'
+import { ClockIcon, ScissorsIcon } from './icons'
 
 type Day = { day: string; open: boolean }
 type SlotsState = { status: 'idle' } | { status: 'loading' } | { status: 'error' } | { status: 'ok'; groups: SlotGroup[] }
@@ -47,7 +47,10 @@ export function BookingFlow({ services, days }: { services: PublicService[]; day
         <h2 id="servicos" className="mb-3 px-1 font-headline text-headline-sm text-ink">
           Selecione um serviço
         </h2>
-        <div className="flex flex-col items-center gap-2 rounded-card bg-subtle p-6 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-card bg-subtle p-6 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-container-low text-muted">
+            <ScissorsIcon />
+          </div>
           <p className="font-headline text-headline-sm text-ink">Nenhum serviço disponível no momento</p>
           <p className="text-sm text-muted">Volte em breve ou fale direto com a profissional.</p>
         </div>
@@ -192,7 +195,10 @@ export function BookingFlow({ services, days }: { services: PublicService[]; day
             </div>
           )}
           {slots.status === 'ok' && slots.groups.length === 0 && (
-            <div className="flex flex-col items-center gap-1 rounded-card bg-subtle p-6 text-center">
+            <div className="flex flex-col items-center gap-2 rounded-card bg-subtle p-6 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-container-low text-muted">
+                <ClockIcon />
+              </div>
               <p className="font-headline text-headline-sm text-ink">Nenhum horário disponível neste dia</p>
               <p className="text-sm text-muted">Escolha outra data acima.</p>
             </div>
