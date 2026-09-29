@@ -47,7 +47,7 @@ Token gerado de forma aleatória e não sequencial (`gen_random_uuid()`, nativo 
 
 ## Admin do painel: qual subdomínio serve o quê
 
-`painel.beautly.cloud` é um subdomínio reservado (ver `schema.sql`), compartilhado por todas as profissionais — não existe um painel por tenant-subdomínio. Login e páginas autenticadas resolvem "de qual tenant é essa profissional" via `auth.uid()` (que é o próprio id do tenant, ver seção de isolamento acima), não via subdomínio da requisição. Isso evita ter que replicar sessão de auth por subdomínio.
+`painel.beautly.cloud` é um subdomínio reservado (ver `supabase/migrations/`), compartilhado por todas as profissionais — não existe um painel por tenant-subdomínio. Login e páginas autenticadas resolvem "de qual tenant é essa profissional" via `auth.uid()` (que é o próprio id do tenant, ver seção de isolamento acima), não via subdomínio da requisição. Isso evita ter que replicar sessão de auth por subdomínio.
 
 A página de login **não pode viver dentro do layout que guarda a sessão** (o layout redireciona pra `/login` quando não há sessão; se `/login` estiver dentro do mesmo grupo guardado, vira loop de redirecionamento). `login/page.tsx` fica fora do route group `(painel)`.
 
@@ -57,7 +57,7 @@ Server Action/rota que cria ou cancela um agendamento dispara, de forma síncron
 
 ## Schema físico
 
-DDL completo (tabelas, constraints e policies de RLS) em [`schema.sql`](./schema.sql).
+DDL completo (tabelas, constraints e policies de RLS) em [`supabase/migrations/`](../supabase/migrations/20260929000000_init.sql) — a migration é a fonte da verdade do schema.
 
 Pontos que só fazem sentido lendo o schema junto com o raciocínio:
 
@@ -103,10 +103,11 @@ beautly/
 │
 ├── proxy.ts                              # lê Host, resolve subdomínio, rewrite pra (public)/tenant/[subdomain]
 ├── docs/                                 # este diretório
-└── supabase/
-    └── migrations/                       # schema.sql versionado como migrations reais
+├── supabase/
+│   └── migrations/                       # fonte da verdade do schema (aplicar no projeto Supabase)
+└── tests/db/                             # testes de RLS e não sobreposição (Postgres descartável)
 ```
 
 ## Em aberto para a próxima etapa
 
-- Scaffolding real do projeto (`create-next-app`, instalação de dependências, projeto Supabase de fato criado) e implementação do código acima — feito sob demanda, ainda não executado.
+- Projeto Supabase de fato criado e conectado (passo manual): criar o projeto, aplicar `supabase/migrations/` (SQL Editor) e preencher `.env.local`. Ainda não feito.

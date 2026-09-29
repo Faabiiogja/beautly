@@ -24,9 +24,9 @@ This repo is single-context:
 │   │   └── 0003-wildcard-subdomains-vercel-nameservers.md
 │   ├── mvp-1.0.0.md
 │   ├── architecture.md
-│   ├── schema.sql
 │   └── supabase-studio-guia.md
-└── (código, quando existir)
+├── supabase/migrations/   # schema (fonte da verdade)
+└── app/, lib/, tests/
 ```
 
 ## Use the glossary's vocabulary

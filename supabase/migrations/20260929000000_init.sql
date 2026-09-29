@@ -1,4 +1,4 @@
--- Beautly 1.0.0 — schema de referência (Supabase / Postgres)
+-- Beautly 1.0.0 — schema inicial (Supabase / Postgres)
 -- Ver docs/architecture.md e docs/adr/ para o raciocínio por trás de cada decisão.
 
 create extension if not exists "btree_gist";
@@ -56,7 +56,10 @@ create table services (
   price_cents integer not null check (price_cents >= 0),
   duration_minutes integer not null check (duration_minutes > 0),
   active boolean not null default true,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+
+  -- alvo da FK composta de appointments: garante que o serviço é do mesmo tenant
+  unique (tenant_id, id)
 );
 
 alter table services enable row level security;
@@ -154,7 +157,7 @@ create policy "public can read blocked_days of active tenants"
 create table appointments (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null references tenants (id) on delete cascade,
-  service_id uuid not null references services (id) on delete restrict,
+  service_id uuid not null,
 
   -- snapshot do serviço no momento da criação (ver regra de negócio em CONTEXT.md)
   service_name_snapshot text not null,
@@ -176,6 +179,10 @@ create table appointments (
   cancelled_at timestamptz,
 
   constraint end_after_start check (end_time > start_time),
+
+  -- um agendamento só pode apontar para serviço do próprio tenant
+  constraint appointment_service_same_tenant
+    foreign key (tenant_id, service_id) references services (tenant_id, id) on delete restrict,
 
   -- ADR 0002: nunca dois agendamentos confirmados sobrepostos no mesmo tenant
   exclude using gist (
