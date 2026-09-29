@@ -1,6 +1,7 @@
-import type { NextRequest } from 'next/server'
+import { after, type NextRequest } from 'next/server'
 import { cancelByToken } from '@/lib/cancellation'
 import { isSameOrigin, json } from '@/lib/http'
+import { notifyProfessional } from '@/lib/notify'
 
 // POST /agendamento/<token>/cancel  (no subdomínio do tenant, via rewrite do proxy)
 // Quem tem o link cancela, sem login. O tenant é o do subdomínio; o token é o único segredo.
@@ -10,7 +11,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   try {
     const result = await cancelByToken(subdomain, token)
-    if (result.status === 'cancelled') return json({ status: 'cancelled' }, 200)
+    if (result.status === 'cancelled') {
+      // só avisa no cancelamento de fato; repetir o pedido (idempotente) não gera outro e-mail
+      if (result.changed) after(() => notifyProfessional('cancelled', { tenantId: result.tenantId, token }))
+      return json({ status: 'cancelled' }, 200)
+    }
     if (result.status === 'already_happened') return json({ error: 'already_happened' }, 409)
     return json({ error: 'not_found' }, 404)
   } catch (error) {

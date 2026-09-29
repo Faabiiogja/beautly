@@ -4,7 +4,7 @@ import { bookingWindow, type BookingValue } from '@/lib/booking-validation'
 import { createServiceRoleClient } from '@/lib/supabase/service-role'
 
 export type BookingResult =
-  | { status: 'created'; token: string }
+  | { status: 'created'; token: string; tenantId: string }
   | { status: 'slot_taken' }
   | { status: 'limit_reached' }
   | { status: 'not_found' }
@@ -50,5 +50,5 @@ export async function createBooking(input: BookingValue & { subdomain: string },
     if (error.code === LIMIT_REACHED_CODE) return { status: 'limit_reached' }
     throw error
   }
-  return { status: 'created', token: data.token }
+  return { status: 'created', token: data.token, tenantId }
 }

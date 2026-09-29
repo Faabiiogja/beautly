@@ -1,7 +1,8 @@
-import type { NextRequest } from 'next/server'
+import { after, type NextRequest } from 'next/server'
 import { createBooking } from '@/lib/booking'
 import { validateBooking } from '@/lib/booking-validation'
 import { isSameOrigin, json } from '@/lib/http'
+import { notifyProfessional } from '@/lib/notify'
 
 const MAX_BODY_BYTES = 4096
 
@@ -33,7 +34,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   try {
     const result = await createBooking({ ...parsed.value, subdomain })
-    if (result.status === 'created') return json({ token: result.token }, 201)
+    if (result.status === 'created') {
+      // e-mail para a profissional depois da resposta; falha aqui nunca afeta o agendamento
+      after(() => notifyProfessional('created', { tenantId: result.tenantId, token: result.token }))
+      return json({ token: result.token }, 201)
+    }
     if (result.status === 'slot_taken') return json({ error: 'slot_taken' }, 409)
     if (result.status === 'limit_reached') return json({ error: 'limit_reached' }, 429)
     return json({ error: 'not_found' }, 404)

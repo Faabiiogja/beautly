@@ -4,7 +4,8 @@ import { createAnonClient } from '@/lib/supabase/anon'
 import { createServiceRoleClient } from '@/lib/supabase/service-role'
 
 export type CancelResult =
-  | { status: 'cancelled' } // cancelado agora ou já estava cancelado (repetir não faz mal)
+  // cancelado agora (changed) ou já estava cancelado (repetir não faz mal, e não deve avisar de novo)
+  | { status: 'cancelled'; changed: boolean; tenantId: string }
   | { status: 'already_happened' }
   | { status: 'not_found' }
 
@@ -29,7 +30,7 @@ export async function cancelByToken(subdomain: string, token: string, now: Date 
     .gt('end_time', now.toISOString())
     .select('id')
   if (error) throw error
-  if (updated.length > 0) return { status: 'cancelled' }
+  if (updated.length > 0) return { status: 'cancelled', changed: true, tenantId: tenant.id }
 
   // Nada foi atualizado: descobre por quê.
   const { data: current, error: readError } = await supabase
@@ -40,5 +41,5 @@ export async function cancelByToken(subdomain: string, token: string, now: Date 
     .maybeSingle()
   if (readError) throw readError
   if (!current) return { status: 'not_found' }
-  return current.status === 'cancelled' ? { status: 'cancelled' } : { status: 'already_happened' }
+  return current.status === 'cancelled' ? { status: 'cancelled', changed: false, tenantId: tenant.id } : { status: 'already_happened' }
 }
