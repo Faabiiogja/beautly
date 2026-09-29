@@ -1,8 +1,8 @@
-import { formatDuration, formatPrice } from '@/lib/format'
 import { formatPhone } from '@/lib/phone'
 import type { PublicService, PublicTenant } from '@/lib/tenants'
 import { BrandEmblem } from './BrandEmblem'
-import { ChatIcon, ClockIcon, PinIcon } from './icons'
+import { BookingFlow } from './BookingFlow'
+import { ChatIcon, PinIcon } from './icons'
 import { Shell } from './Shell'
 
 // Só dígitos, com DDI 55 se ainda não tiver, para o link do WhatsApp.
@@ -11,7 +11,7 @@ const whatsappUrl = (phone: string) => {
   return `https://wa.me/${digits.startsWith('55') ? digits : `55${digits}`}`
 }
 
-export function BusinessPage({ tenant, services }: { tenant: PublicTenant; services: PublicService[] }) {
+export function BusinessPage({ tenant, services, days }: { tenant: PublicTenant; services: PublicService[]; days: { day: string; open: boolean }[] }) {
   return (
     <Shell>
       <main className="flex flex-col pb-10">
@@ -49,35 +49,7 @@ export function BusinessPage({ tenant, services }: { tenant: PublicTenant; servi
           </div>
         </header>
 
-        <section aria-labelledby="servicos" className="flex flex-col px-5">
-          <div className="mb-3 px-1">
-            <h2 id="servicos" className="font-headline text-headline-sm text-ink">
-              Selecione um serviço
-            </h2>
-            <p className="text-label-sm text-muted">Escolha um procedimento para agendar</p>
-          </div>
-          {services.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 rounded-card bg-subtle p-6 text-center">
-              <p className="font-headline text-headline-sm text-ink">Nenhum serviço disponível no momento</p>
-              <p className="text-sm text-muted">Volte em breve ou fale direto com a profissional.</p>
-            </div>
-          ) : (
-            <ul className="flex flex-col gap-3">
-              {services.map((service) => (
-                <li key={service.id} className="flex min-h-12 flex-col gap-2 rounded-card bg-card p-4 shadow-soft">
-                  <span className="font-headline text-headline-sm text-ink">{service.name}</span>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-label-sm text-muted">
-                      <ClockIcon />
-                      {formatDuration(service.duration_minutes)}
-                    </span>
-                    <span className="font-headline text-headline-sm text-brand">{formatPrice(service.price_cents)}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        <BookingFlow services={services} days={days} />
       </main>
     </Shell>
   )

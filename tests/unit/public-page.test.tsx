@@ -15,9 +15,11 @@ const services = [
   { id: '2', name: 'Pedicure', price_cents: 6500, duration_minutes: 90 },
 ]
 
+const days = [{ day: '2026-09-29', open: true }]
+
 describe('BusinessPage', () => {
   it('mostra os dados do negócio e os serviços', () => {
-    const html = renderToStaticMarkup(<BusinessPage tenant={tenant} services={services} />)
+    const html = renderToStaticMarkup(<BusinessPage tenant={tenant} services={services} days={days} />)
     for (const text of ['Studio da Ana', '(11) 99999-9999', 'Rua das Flores, 10', 'Manicure e nail art', 'Manicure', 'Pedicure', '1h30']) {
       expect(html).toContain(text)
     }
@@ -26,13 +28,13 @@ describe('BusinessPage', () => {
 
   it('omite campos opcionais ausentes', () => {
     const html = renderToStaticMarkup(
-      <BusinessPage tenant={{ ...tenant, address: null, description: null }} services={services} />,
+      <BusinessPage tenant={{ ...tenant, address: null, description: null }} services={services} days={days} />,
     )
     expect(html).not.toContain('null')
   })
 
   it('mostra o estado vazio quando não há serviços', () => {
-    const html = renderToStaticMarkup(<BusinessPage tenant={tenant} services={[]} />)
+    const html = renderToStaticMarkup(<BusinessPage tenant={tenant} services={[]} days={days} />)
     expect(html).toContain('enhum serviço disponível no momento')
   })
 })

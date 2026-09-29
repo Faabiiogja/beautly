@@ -37,6 +37,10 @@ Segue o padrão documentado pela própria Vercel para plataformas multi-tenant (
 
 Garantida no banco, não na aplicação: `EXCLUDE USING gist` sobre `(tenant_id, tsrange(start_time, end_time)) WHERE status = 'confirmed'`, com a extensão `btree_gist`. Ver [ADR 0002](./adr/0002-exclusion-constraint-no-overlap.md). A aplicação apenas tenta o `INSERT`; se o banco rejeitar por violação da constraint, a rota traduz isso no erro de negócio já definido ("esse horário acabou de ser reservado, escolha outro").
 
+## Janela de agendamento
+
+A cliente pode agendar de hoje até hoje + 30 dias, inclusive (31 datas no seletor), sem antecedência mínima. Regra em `lib/availability.ts` (`MAX_DAYS_AHEAD`).
+
 ## Link único de agendamento
 
 Token gerado de forma aleatória e não sequencial (`gen_random_uuid()`, nativo do Postgres) em coluna própria, distinto do id interno da linha — evita que alguém adivinhe ou itere sobre agendamentos de outras clientes.
@@ -81,7 +85,8 @@ beautly/
 │   │   └── tenant/
 │   │       └── [subdomain]/             # alvo do rewrite do proxy — namespace isolado do apex/painel
 │   │           ├── page.tsx             # negócio + serviços + seleção de data/horário
-│   │           ├── actions.ts           # server actions: disponibilidade + criar agendamento (service role key)
+│   │           ├── slots/route.ts       # GET horários livres (só intervalos ocupados via service role; nunca dados de cliente)
+│   │           ├── actions.ts           # server actions: criar agendamento (service role key) — ainda não existe
 │   │           └── agendamento/
 │   │               └── [token]/
 │   │                   ├── page.tsx     # ver detalhes + cancelar
@@ -104,7 +109,8 @@ beautly/
 │   │   ├── server.ts                    # client autenticado (cookies do painel)
 │   │   ├── client.ts                    # client de browser (login)
 │   │   └── service-role.ts              # client com service role key (rotas públicas)
-│   ├── availability.ts                  # cálculo da grade de horários disponíveis (cuidado com fuso — ver acima)
+│   ├── availability.ts                  # motor puro: grade de 30 min, expediente, bloqueios, janela de 30 dias
+│   ├── availability-data.ts             # carrega os dados (anon + service role só para agendamentos) e chama o motor
 │   ├── dates.ts, hours.ts               # datas em America/Sao_Paulo; validação de expediente e dias bloqueados
 │   ├── services.ts, settings.ts         # validação de serviços (preço/duração) e das configurações + logo
 │   ├── auth/                            # DAL (dal.ts, access.ts), validação e motivos de redirect

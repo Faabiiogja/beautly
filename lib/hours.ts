@@ -1,3 +1,5 @@
+import { isRealDay } from '@/lib/dates'
+
 export type DayInput = { closed: boolean; start: string; end: string }
 export type WorkingHoursRow = { weekday: number; closed: boolean; start_time: string | null; end_time: string | null }
 export type WeekResult =
@@ -32,11 +34,8 @@ export function validateWeek(days: DayInput[]): WeekResult {
 
 // Dia bloqueado: data real, hoje ou futura (today = YYYY-MM-DD em America/Sao_Paulo).
 export function validateBlockedDay(day: string, today: string): { ok: true; value: string } | { ok: false; error: string } {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day)
-  if (!match) return { ok: false, error: 'Escolha uma data.' }
-  const [y, m, d] = [Number(match[1]), Number(match[2]), Number(match[3])]
-  const real = new Date(Date.UTC(y, m - 1, d))
-  if (real.getUTCFullYear() !== y || real.getUTCMonth() !== m - 1 || real.getUTCDate() !== d) return { ok: false, error: 'Data inválida.' }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return { ok: false, error: 'Escolha uma data.' }
+  if (!isRealDay(day)) return { ok: false, error: 'Data inválida.' }
   if (day < today) return { ok: false, error: 'Escolha hoje ou uma data futura.' }
   return { ok: true, value: day }
 }
