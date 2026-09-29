@@ -3,7 +3,7 @@
 // agendamento" dentro do diálogo — precisa ser a ação de maior destaque ali, por isso é sólido).
 export type ButtonVariant = 'primary' | 'secondary' | 'destructive'
 
-const VARIANT_CLASSES: Record<ButtonVariant, string> = {
+export const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary: 'bg-brand text-on-brand hover:bg-primary',
   secondary: 'border-[1.5px] border-border-soft bg-card text-ink hover:bg-subtle',
   destructive: 'bg-danger text-on-brand hover:bg-[#b04030]',

@@ -79,7 +79,6 @@ Confirmado como fora da 1.0.0 (do briefing original, mais o que foi excluído du
 - Bloqueio parcial de horário dentro de um dia (só dia inteiro)
 - Calendário visual no painel (é lista cronológica)
 - Expiração ativa do link de agendamento
-- Landing page institucional em `beautly.cloud` (raiz, sem subdomínio)
 - UI de admin da plataforma dentro do produto
 - Suporte a múltiplos fusos horários
 - Combinação de múltiplos serviços em um único agendamento

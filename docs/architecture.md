@@ -102,7 +102,7 @@ beautly/
 │   │   ├── horarios/page.tsx            # expediente por dia da semana + bloqueio de dias
 │   │   └── configuracoes/page.tsx       # nome, logo, telefone, endereço, descrição
 │   │
-│   └── page.tsx                         # apex (beautly.cloud) — stub, sem landing page de marketing
+│   └── page.tsx                         # apex (beautly.cloud) — landing page institucional
 │
 ├── lib/
 │   ├── supabase/
