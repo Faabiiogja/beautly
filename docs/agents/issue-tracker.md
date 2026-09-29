@@ -2,7 +2,7 @@
 
 Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all operations.
 
-> **Pré-requisito ainda não cumprido**: este diretório não é um repositório git ainda, e não existe repositório remoto no GitHub para o Beautly. Antes que qualquer skill consiga rodar `gh issue create` de verdade, é preciso: `git init`, criar o repositório no GitHub (`gh repo create`), e configurar o remoto. Isso é uma decisão do usuário (visibilidade pública/privada, nome do repo), não algo pra ser feito silenciosamente por uma skill.
+Repositório: [github.com/Faabiiogja/beautly](https://github.com/Faabiiogja/beautly) (público, branch `main`).
 
 ## Conventions
 
