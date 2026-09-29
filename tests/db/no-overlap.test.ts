@@ -20,6 +20,7 @@ beforeAll(async () => {
 afterAll(() => db.end())
 
 const EXCLUSION_VIOLATION = '23P01'
+const DEADLOCK_DETECTED = '40P01'
 
 describe('integridade do agendamento', () => {
   it('rejeita serviço de outro tenant', async () => {
@@ -77,8 +78,10 @@ describe('exclusion constraint de agendamentos (ADR 0002)', () => {
       }),
     )
     expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1)
+    // Sob concorrência o Postgres pode resolver o conflito como deadlock em vez de violação da
+    // constraint. Para a aplicação os dois significam "horário tomado".
     for (const r of results.filter((r) => r.status === 'rejected')) {
-      expect((r as PromiseRejectedResult).reason.code).toBe(EXCLUSION_VIOLATION)
+      expect([EXCLUSION_VIOLATION, DEADLOCK_DETECTED]).toContain((r as PromiseRejectedResult).reason.code)
     }
   })
 })
